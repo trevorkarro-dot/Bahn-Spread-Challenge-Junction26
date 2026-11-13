@@ -8,3 +8,13 @@
 2026-11-13T20:40:34.999Z RESULT r3w4 board margin 10260.93 revenue 29648 won 295 ontime 99.0% undelivered 0.0% ranked true steps 609 secs 13 stats {"quoted":825,"declined":205,"won":303,"lost":522,"posts":313,"refused":4,"offers":6575,"offersAccepted":13} rejoins 0
 2026-11-13T20:40:35.123Z created ranking run 5 of round 3: wd2b41f3d7612a10e3097
 2026-11-13T20:40:48.465Z RESULT r3w5 board margin 14097.00 revenue 35280 won 353 ontime 99.2% undelivered 0.0% ranked true steps 622 secs 13 stats {"quoted":791,"declined":246,"won":358,"lost":433,"posts":363,"refused":8,"offers":5511,"offersAccepted":23} rejoins 0
+2026-11-13T22:49:13.917Z created ranking run 1 of round 4: w9aa28149a0f66ec17d4b
+2026-11-13T22:49:25.687Z RESULT r4w1 board margin 15299.95 revenue 38258 won 386 ontime 98.7% undelivered 0.0% ranked true steps 604 secs 12 stats {"quoted":866,"declined":165,"won":392,"lost":474,"posts":406,"refused":3,"offers":6990,"offersAccepted":13} rejoins 0
+2026-11-13T22:49:25.802Z created ranking run 2 of round 4: wf176da7c1015232b6f5f
+2026-11-13T22:49:38.177Z RESULT r4w2 board margin 16856.80 revenue 40655 won 379 ontime 99.2% undelivered 0.0% ranked true steps 584 secs 12 stats {"quoted":888,"declined":150,"won":382,"lost":506,"posts":396,"refused":1,"offers":8693,"offersAccepted":13} rejoins 0
+2026-11-13T22:49:38.293Z created ranking run 3 of round 4: wb43b64db8db940802e88
+2026-11-13T22:49:49.872Z RESULT r4w3 board margin 14974.87 revenue 40348 won 363 ontime 97.5% undelivered 0.0% ranked true steps 609 secs 12 stats {"quoted":902,"declined":132,"won":367,"lost":535,"posts":388,"refused":5,"offers":7280,"offersAccepted":14} rejoins 0
+2026-11-13T22:49:50.003Z created ranking run 4 of round 4: w32330038170e82003e34
+2026-11-13T22:50:01.686Z RESULT r4w4 board margin 16508.16 revenue 43280 won 371 ontime 95.1% undelivered 0.0% ranked true steps 609 secs 12 stats {"quoted":888,"declined":150,"won":375,"lost":513,"posts":403,"refused":4,"offers":6442,"offersAccepted":21} rejoins 0
+2026-11-13T22:50:01.810Z created ranking run 5 of round 4: wb36abd3454a7fb640fa7
+2026-11-13T22:50:13.898Z RESULT r4w5 board margin 16390.24 revenue 43064 won 367 ontime 96.7% undelivered 0.0% ranked true steps 612 secs 12 stats {"quoted":842,"declined":195,"won":371,"lost":471,"posts":401,"refused":7,"offers":7015,"offersAccepted":15} rejoins 0
