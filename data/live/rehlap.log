@@ -1,0 +1,143 @@
+2026-11-13T20:38:04.289Z Rehearsal world w23108b286fd5cfb320e1, seed s5, level 8, speed 1.
+2026-11-13T20:38:05.005Z joined at Mon0 00:10: 1 events replayed, 0 orders, 0 open gigs, 0 booked, 0 open requests, in 501 ms
+2026-11-13T20:39:28.445Z slow lap: 826 ms at Mon0 09:36, 3 events waiting, 0 actions queued
+2026-11-13T20:39:34.659Z slow lap: 875 ms at Mon0 09:57, 1 events waiting, 0 actions queued
+2026-11-13T20:39:50.396Z slow lap: 822 ms at Mon0 10:50, 4 events waiting, 0 actions queued
+2026-11-13T20:39:52.386Z slow lap: 863 ms at Mon0 10:56, 7 events waiting, 0 actions queued
+2026-11-13T20:39:57.153Z slow lap: 1128 ms at Mon0 11:08, 16 events waiting, 0 actions queued
+2026-11-13T20:40:02.892Z slow lap: 888 ms at Mon0 11:30, 4 events waiting, 0 actions queued
+2026-11-13T20:40:33.076Z slow lap: 1189 ms at Mon0 13:09, 9 events waiting, 0 actions queued
+2026-11-13T20:40:47.101Z slow lap: 1550 ms at Mon0 13:56, 13 events waiting, 0 actions queued
+2026-11-13T20:40:58.241Z slow lap: 827 ms at Mon0 14:36, 5 events waiting, 0 actions queued
+2026-11-13T20:41:01.883Z slow lap: 1054 ms at Mon0 14:46, 5 events waiting, 0 actions queued
+2026-11-13T20:41:14.142Z slow lap: 1066 ms at Mon0 15:28, 4 events waiting, 0 actions queued
+2026-11-13T20:41:44.358Z slow lap: 984 ms at Mon0 17:08, 6 events waiting, 0 actions queued
+2026-11-13T20:42:07.450Z slow lap: 1002 ms at Mon0 18:26, 2 events waiting, 0 actions queued
+2026-11-13T20:42:32.436Z slow lap: 730 ms at Mon0 19:46, 13 events waiting, 0 actions queued
+2026-11-13T20:42:43.136Z slow lap: 837 ms at Mon0 20:26, 1 events waiting, 0 actions queued
+2026-11-13T20:42:52.566Z slow lap: 1171 ms at Mon0 20:56, 7 events waiting, 0 actions queued
+2026-11-13T20:43:11.554Z slow lap: 1076 ms at Mon0 21:56, 15 events waiting, 0 actions queued
+2026-11-13T20:43:17.030Z Mon done: margin 668 revenue 1707 won 106 on time 100.0% | actions 1038 in 315 batches, quote ms median 219 max 1756, late quotes 0, refused {"offer":9}, queue 0
+2026-11-13T20:44:06.648Z slow lap: 4345 ms at Tue1 07:30, 4 events waiting, 0 actions queued
+2026-11-13T20:44:07.320Z stream was silent: 9 events read over HTTP; opening it again
+2026-11-13T20:44:33.336Z slow lap: 1835 ms at Tue1 09:09, 17 events waiting, 0 actions queued
+2026-11-13T20:44:40.286Z slow lap: 750 ms at Tue1 09:35, 19 events waiting, 0 actions queued
+2026-11-13T20:44:41.316Z slow lap: 894 ms at Tue1 09:37, 10 events waiting, 0 actions queued
+2026-11-13T20:44:42.753Z slow lap: 1436 ms at Tue1 09:37, 17 events waiting, 0 actions queued
+2026-11-13T20:44:47.406Z slow lap: 1233 ms at Tue1 09:56, 26 events waiting, 0 actions queued
+2026-11-13T20:44:57.074Z slow lap: 6068 ms at Tue1 10:13, 69 events waiting, 0 actions queued
+2026-11-13T20:44:57.665Z quote for R00284 refused: Request R00284 is not open
+2026-11-13T20:44:57.666Z quote for R00285 refused: Request R00285 is not open
+2026-11-13T20:44:57.666Z quote for R00286 refused: Request R00286 is not open
+2026-11-13T20:44:57.666Z quote for R00287 refused: Request R00287 is not open
+2026-11-13T20:45:05.706Z slow lap: 1016 ms at Tue1 10:58, 5 events waiting, 0 actions queued
+2026-11-13T20:45:18.323Z slow lap: 987 ms at Tue1 11:41, 8 events waiting, 0 actions queued
+2026-11-13T20:45:20.047Z slow lap: 842 ms at Tue1 11:48, 3 events waiting, 0 actions queued
+2026-11-13T20:45:32.075Z slow lap: 1692 ms at Tue1 12:26, 11 events waiting, 0 actions queued
+2026-11-13T20:45:37.310Z slow lap: 1294 ms at Tue1 12:42, 7 events waiting, 0 actions queued
+2026-11-13T20:45:45.689Z slow lap: 1071 ms at Tue1 13:13, 2 events waiting, 0 actions queued
+2026-11-13T20:45:47.873Z slow lap: 2182 ms at Tue1 13:14, 25 events waiting, 0 actions queued
+2026-11-13T20:45:48.973Z slow lap: 730 ms at Tue1 13:24, 8 events waiting, 0 actions queued
+2026-11-13T20:45:51.316Z slow lap: 1110 ms at Tue1 13:28, 22 events waiting, 0 actions queued
+2026-11-13T20:45:53.172Z slow lap: 1644 ms at Tue1 13:34, 82 events waiting, 0 actions queued
+2026-11-13T20:45:55.431Z slow lap: 2258 ms at Tue1 13:37, 27 events waiting, 0 actions queued
+2026-11-13T20:46:02.535Z slow lap: 1545 ms at Tue1 14:04, 27 events waiting, 0 actions queued
+2026-11-13T20:46:06.447Z slow lap: 718 ms at Tue1 14:22, 19 events waiting, 0 actions queued
+2026-11-13T20:46:07.523Z slow lap: 979 ms at Tue1 14:25, 4 events waiting, 0 actions queued
+2026-11-13T20:46:23.635Z slow lap: 774 ms at Tue1 15:21, 6 events waiting, 0 actions queued
+2026-11-13T20:46:49.799Z slow lap: 1725 ms at Tue1 16:44, 5 events waiting, 0 actions queued
+2026-11-13T20:46:51.445Z slow lap: 834 ms at Tue1 16:47, 4 events waiting, 0 actions queued
+2026-11-13T20:46:55.026Z slow lap: 1052 ms at Tue1 17:04, 21 events waiting, 0 actions queued
+2026-11-13T20:46:56.845Z slow lap: 1318 ms at Tue1 17:06, 17 events waiting, 0 actions queued
+2026-11-13T20:46:57.573Z slow lap: 728 ms at Tue1 17:09, 17 events waiting, 0 actions queued
+2026-11-13T20:47:02.565Z slow lap: 1028 ms at Tue1 17:27, 14 events waiting, 0 actions queued
+2026-11-13T20:47:36.917Z slow lap: 1299 ms at Tue1 19:24, 4 events waiting, 0 actions queued
+2026-11-13T20:48:00.887Z slow lap: 768 ms at Tue1 20:45, 4 events waiting, 0 actions queued
+2026-11-13T20:48:27.246Z slow lap: 940 ms at Tue1 22:15, 26 events waiting, 0 actions queued
+2026-11-13T20:48:28.610Z Tue done: margin 3331 revenue 8573 won 184 on time 100.0% | actions 2155 in 556 batches, quote ms median 258 max 3899, late quotes 4, refused {"offer":29,"reprice":2,"quote":4}, queue 0
+2026-11-13T20:49:50.177Z slow lap: 947 ms at Wed2 09:28, 5 events waiting, 0 actions queued
+2026-11-13T20:49:55.383Z slow lap: 1045 ms at Wed2 09:45, 6 events waiting, 0 actions queued
+2026-11-13T20:49:56.663Z slow lap: 755 ms at Wed2 09:51, 4 events waiting, 0 actions queued
+2026-11-13T20:50:02.101Z slow lap: 857 ms at Wed2 10:09, 4 events waiting, 0 actions queued
+2026-11-13T20:50:07.761Z slow lap: 787 ms at Wed2 10:27, 6 events waiting, 0 actions queued
+2026-11-13T20:50:08.770Z slow lap: 932 ms at Wed2 10:28, 9 events waiting, 0 actions queued
+2026-11-13T20:50:22.569Z slow lap: 894 ms at Wed2 11:16, 4 events waiting, 0 actions queued
+2026-11-13T20:50:25.255Z slow lap: 2120 ms at Wed2 11:21, 20 events waiting, 0 actions queued
+2026-11-13T20:50:31.116Z slow lap: 826 ms at Wed2 11:43, 28 events waiting, 0 actions queued
+2026-11-13T20:50:36.343Z slow lap: 921 ms at Wed2 12:00, 111 events waiting, 0 actions queued
+2026-11-13T20:50:45.873Z slow lap: 1772 ms at Wed2 12:26, 66 events waiting, 0 actions queued
+2026-11-13T20:50:49.355Z slow lap: 742 ms at Wed2 12:45, 7 events waiting, 0 actions queued
+2026-11-13T20:50:51.753Z slow lap: 726 ms at Wed2 12:53, 39 events waiting, 0 actions queued
+2026-11-13T20:51:02.486Z slow lap: 1515 ms at Wed2 13:27, 2 events waiting, 0 actions queued
+2026-11-13T20:51:05.262Z slow lap: 1070 ms at Wed2 13:38, 3 events waiting, 0 actions queued
+2026-11-13T20:51:09.734Z slow lap: 763 ms at Wed2 13:54, 6 events waiting, 0 actions queued
+2026-11-13T20:51:10.511Z slow lap: 777 ms at Wed2 13:54, 12 events waiting, 0 actions queued
+2026-11-13T20:51:12.982Z slow lap: 735 ms at Wed2 14:04, 43 events waiting, 0 actions queued
+2026-11-13T20:51:14.190Z slow lap: 869 ms at Wed2 14:06, 11 events waiting, 0 actions queued
+2026-11-13T20:51:22.810Z slow lap: 925 ms at Wed2 14:37, 3 events waiting, 0 actions queued
+2026-11-13T20:51:25.456Z slow lap: 1717 ms at Wed2 14:42, 34 events waiting, 0 actions queued
+2026-11-13T20:51:27.419Z slow lap: 1962 ms at Wed2 14:48, 5 events waiting, 0 actions queued
+2026-11-13T20:51:29.026Z slow lap: 1066 ms at Wed2 14:53, 10 events waiting, 0 actions queued
+2026-11-13T20:51:29.756Z slow lap: 730 ms at Wed2 14:59, 68 events waiting, 0 actions queued
+2026-11-13T20:51:30.575Z slow lap: 818 ms at Wed2 15:01, 91 events waiting, 0 actions queued
+2026-11-13T20:51:32.974Z slow lap: 1120 ms at Wed2 15:10, 10 events waiting, 0 actions queued
+2026-11-13T20:51:37.154Z slow lap: 1230 ms at Wed2 15:22, 11 events waiting, 0 actions queued
+2026-11-13T20:51:49.605Z slow lap: 903 ms at Wed2 16:07, 5 events waiting, 0 actions queued
+2026-11-13T20:51:50.858Z slow lap: 912 ms at Wed2 16:11, 4 events waiting, 0 actions queued
+2026-11-13T20:51:52.152Z slow lap: 862 ms at Wed2 16:15, 5 events waiting, 0 actions queued
+2026-11-13T20:51:57.677Z slow lap: 716 ms at Wed2 16:35, 22 events waiting, 0 actions queued
+2026-11-13T20:51:58.937Z slow lap: 723 ms at Wed2 16:38, 1 events waiting, 0 actions queued
+2026-11-13T20:52:13.699Z slow lap: 740 ms at Wed2 17:27, 84 events waiting, 0 actions queued
+2026-11-13T20:52:19.379Z slow lap: 716 ms at Wed2 17:44, 6 events waiting, 0 actions queued
+2026-11-13T20:52:21.563Z slow lap: 1547 ms at Wed2 17:48, 17 events waiting, 0 actions queued
+2026-11-13T20:53:18.103Z slow lap: 952 ms at Wed2 21:00, 4 events waiting, 0 actions queued
+2026-11-13T20:53:26.885Z slow lap: 1173 ms at Wed2 21:30, 4 events waiting, 0 actions queued
+2026-11-13T20:53:36.113Z slow lap: 1303 ms at Wed2 22:03, 4 events waiting, 0 actions queued
+2026-11-13T20:53:41.255Z Wed done: margin 6544 revenue 16669 won 248 on time 97.8% | actions 3683 in 799 batches, quote ms median 298 max 3899, late quotes 4, refused {"offer":40,"reprice":6,"quote":4,"withdraw":1}, queue 0
+2026-11-13T20:53:41.788Z slow lap: 956 ms at Thu3 00:01, 3 events waiting, 0 actions queued
+2026-11-13T20:54:50.237Z slow lap: 873 ms at Thu3 08:49, 1 events waiting, 0 actions queued
+2026-11-13T20:54:55.105Z slow lap: 726 ms at Thu3 09:05, 7 events waiting, 0 actions queued
+2026-11-13T20:55:16.722Z slow lap: 3183 ms at Thu3 10:10, 15 events waiting, 0 actions queued
+2026-11-13T20:55:17.909Z slow lap: 1186 ms at Thu3 10:19, 4 events waiting, 0 actions queued
+2026-11-13T20:55:21.485Z slow lap: 1245 ms at Thu3 10:29, 5 events waiting, 0 actions queued
+2026-11-13T20:55:29.237Z quote for R00676 refused: Request R00676 is not open
+2026-11-13T20:55:30.843Z slow lap: 1605 ms at Thu3 11:02, 7 events waiting, 0 actions queued
+2026-11-13T20:55:32.354Z slow lap: 1510 ms at Thu3 11:03, 13 events waiting, 0 actions queued
+2026-11-13T20:55:34.188Z slow lap: 964 ms at Thu3 11:11, 3 events waiting, 0 actions queued
+2026-11-13T20:55:34.892Z slow lap: 704 ms at Thu3 11:13, 3 events waiting, 0 actions queued
+2026-11-13T20:55:43.423Z slow lap: 2366 ms at Thu3 11:37, 19 events waiting, 0 actions queued
+2026-11-13T20:55:44.833Z slow lap: 1409 ms at Thu3 11:44, 4 events waiting, 0 actions queued
+2026-11-13T20:55:46.025Z slow lap: 1191 ms at Thu3 11:49, 23 events waiting, 0 actions queued
+2026-11-13T20:55:46.998Z slow lap: 973 ms at Thu3 11:53, 14 events waiting, 0 actions queued
+2026-11-13T20:55:51.164Z slow lap: 1617 ms at Thu3 12:08, 3 events waiting, 0 actions queued
+2026-11-13T20:55:55.173Z slow lap: 1579 ms at Thu3 12:11, 18 events waiting, 0 actions queued
+2026-11-13T20:56:21.943Z slow lap: 885 ms at Thu3 13:54, 2 events waiting, 0 actions queued
+2026-11-13T20:56:27.665Z slow lap: 718 ms at Thu3 14:14, 5 events waiting, 0 actions queued
+2026-11-13T20:56:36.661Z slow lap: 924 ms at Thu3 14:44, 2 events waiting, 0 actions queued
+2026-11-13T20:56:52.188Z slow lap: 965 ms at Thu3 15:34, 10 events waiting, 0 actions queued
+2026-11-13T20:57:02.703Z slow lap: 745 ms at Thu3 16:10, 9 events waiting, 0 actions queued
+2026-11-13T20:57:06.063Z slow lap: 736 ms at Thu3 16:20, 16 events waiting, 0 actions queued
+2026-11-13T20:57:24.363Z slow lap: 728 ms at Thu3 17:21, 15 events waiting, 0 actions queued
+2026-11-13T20:57:37.973Z slow lap: 810 ms at Thu3 18:08, 24 events waiting, 0 actions queued
+2026-11-13T20:58:39.335Z slow lap: 1850 ms at Thu3 21:23, 4 events waiting, 0 actions queued
+2026-11-13T20:58:49.539Z slow lap: 1465 ms at Thu3 22:26, 1 events waiting, 0 actions queued
+2026-11-13T20:58:53.844Z Thu done: margin 9000 revenue 23534 won 280 on time 98.2% | actions 4457 in 1058 batches, quote ms median 276 max 3916, late quotes 5, refused {"offer":48,"reprice":7,"quote":5,"withdraw":1}, queue 0
+2026-11-13T20:59:56.376Z slow lap: 1211 ms at Fri4 08:27, 5 events waiting, 0 actions queued
+2026-11-13T21:00:05.730Z slow lap: 994 ms at Fri4 09:00, 7 events waiting, 0 actions queued
+2026-11-13T21:00:06.653Z slow lap: 922 ms at Fri4 09:02, 2 events waiting, 0 actions queued
+2026-11-13T21:00:08.357Z slow lap: 860 ms at Fri4 09:08, 2 events waiting, 0 actions queued
+2026-11-13T21:00:34.778Z slow lap: 1671 ms at Fri4 10:35, 5 events waiting, 0 actions queued
+2026-11-13T21:00:35.610Z slow lap: 832 ms at Fri4 10:37, 3 events waiting, 0 actions queued
+2026-11-13T21:00:46.645Z slow lap: 901 ms at Fri4 11:15, 3 events waiting, 0 actions queued
+2026-11-13T21:00:47.943Z slow lap: 1297 ms at Fri4 11:16, 35 events waiting, 0 actions queued
+2026-11-13T21:01:07.729Z slow lap: 1365 ms at Fri4 12:23, 33 events waiting, 0 actions queued
+2026-11-13T21:02:12.356Z slow lap: 823 ms at Fri4 16:00, 112 events waiting, 0 actions queued
+2026-11-13T21:04:05.938Z Fri done: margin 12705 revenue 32428 won 352 on time 98.4% | actions 6068 in 1319 batches, quote ms median 261 max 3916, late quotes 5, refused {"offer":58,"reprice":7,"quote":5,"withdraw":1}, queue 0
+2026-11-13T21:04:51.064Z stream was silent: 1 events read over HTTP; opening it again
+2026-11-13T21:06:05.061Z Sat done: margin 12872 revenue 32817 won 352 on time 98.4% | actions 6437 in 1352 batches, quote ms median 261 max 3916, late quotes 5, refused {"offer":67,"reprice":8,"quote":5,"withdraw":1}, queue 0
+2026-11-13T21:07:20.563Z Sun done: margin 12872 revenue 32817 won 352 on time 98.4% | actions 6495 in 1361 batches, quote ms median 261 max 3916, late quotes 5, refused {"offer":67,"reprice":8,"quote":5,"withdraw":1}, queue 0
+2026-11-13T21:07:21.007Z slow lap: 1927 ms at Mon7 00:00, 18 events waiting, 0 actions queued
+2026-11-13T21:08:10.290Z slow lap: 2409 ms at Mon7 09:41, 1 events waiting, 0 actions queued
+2026-11-13T21:10:04.789Z Mon done: margin 14640 revenue 37481 won 351 on time 98.6% | actions 6514 in 1368 batches, quote ms median 261 max 3916, late quotes 5, refused {"offer":67,"reprice":9,"quote":5,"withdraw":1}, queue 0
+2026-11-13T21:11:16.610Z Tue done: margin 14571 revenue 37618 won 351 on time 98.6% | actions 6514 in 1368 batches, quote ms median 261 max 3916, late quotes 5, refused {"offer":67,"reprice":9,"quote":5,"withdraw":1}, queue 0
+2026-11-13T21:12:27.058Z END margin 14570.71 revenue 37618 won 351 ontime 98.6% undelivered 0.0% ranked true | joins 1 errors 0 stalls 124 events 19528 actions 6514 batches 1368 quote ms median 261 p99 2184 max 3916 late quotes 5 refused {"offer":67,"reprice":9,"quote":5,"withdraw":1} | ../data/live/rehlap-s5-L8.json

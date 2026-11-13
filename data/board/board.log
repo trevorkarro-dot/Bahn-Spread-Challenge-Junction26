@@ -1,0 +1,10 @@
+2026-11-13T20:39:40.046Z created ranking run 1 of round 3: wf6f18c4868a22474c199
+2026-11-13T20:39:53.647Z RESULT r3w1 board margin 15360.73 revenue 38618 won 339 ontime 97.6% undelivered 0.0% ranked true steps 591 secs 14 stats {"quoted":878,"declined":161,"won":344,"lost":534,"posts":354,"refused":6,"offers":6466,"offersAccepted":6} rejoins 0
+2026-11-13T20:39:53.782Z created ranking run 2 of round 3: w343b2d942168811101ff
+2026-11-13T20:40:08.803Z RESULT r3w2 board margin 20789.18 revenue 52292 won 433 ontime 97.7% undelivered 0.0% ranked true steps 652 secs 15 stats {"quoted":896,"declined":139,"won":440,"lost":456,"posts":459,"refused":4,"offers":9879,"offersAccepted":31} rejoins 0
+2026-11-13T20:40:08.928Z created ranking run 3 of round 3: w2de2d6d4f9ba818c2ee3
+2026-11-13T20:40:21.999Z RESULT r3w3 board margin 9445.93 revenue 28240 won 294 ontime 93.9% undelivered 0.0% ranked true steps 605 secs 13 stats {"quoted":856,"declined":179,"won":297,"lost":559,"posts":338,"refused":3,"offers":6521,"offersAccepted":21} rejoins 0
+2026-11-13T20:40:22.126Z created ranking run 4 of round 3: w78e117bfba1c780d9a8a
+2026-11-13T20:40:34.999Z RESULT r3w4 board margin 10260.93 revenue 29648 won 295 ontime 99.0% undelivered 0.0% ranked true steps 609 secs 13 stats {"quoted":825,"declined":205,"won":303,"lost":522,"posts":313,"refused":4,"offers":6575,"offersAccepted":13} rejoins 0
+2026-11-13T20:40:35.123Z created ranking run 5 of round 3: wd2b41f3d7612a10e3097
+2026-11-13T20:40:48.465Z RESULT r3w5 board margin 14097.00 revenue 35280 won 353 ontime 99.2% undelivered 0.0% ranked true steps 622 secs 13 stats {"quoted":791,"declined":246,"won":358,"lost":433,"posts":363,"refused":8,"offers":5511,"offersAccepted":23} rejoins 0

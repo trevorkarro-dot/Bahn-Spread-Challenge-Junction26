@@ -1,0 +1,15 @@
+{
+  "a-base": {},
+  "a-ramp120": {"rampAwake": 120},
+  "a-ramp240": {"rampAwake": 240},
+  "a-ramp900": {"rampAwake": 900},
+  "a-start60": {"feeStart": 0.6},
+  "a-start75": {"feeStart": 0.75},
+  "a-start100": {"feeStart": 1.0},
+  "a-cap140": {"feeCap": 1.4},
+  "a-cap190": {"feeCap": 1.9},
+  "a-awake0": {"minAwake": 0},
+  "a-awake360": {"minAwake": 360},
+  "a-hold10": {"feeHold": 10},
+  "a-hold60": {"feeHold": 60}
+}

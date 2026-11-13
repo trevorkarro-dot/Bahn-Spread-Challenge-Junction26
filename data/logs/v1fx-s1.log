@@ -1,0 +1,10 @@
+s1 v1fx day 0 margin 142 rev 919 won 75 ontime 100.0% steps 81
+s1 v1fx day 1 margin 1339 rev 8716 won 154 ontime 86.0% steps 176
+s1 v1fx day 2 margin 1977 rev 17866 won 221 ontime 88.1% steps 275
+s1 v1fx day 3 margin 2248 rev 25742 won 290 ontime 86.7% steps 372
+s1 v1fx day 4 margin 2619 rev 35904 won 339 ontime 88.6% steps 460
+s1 v1fx day 5 margin 2529 rev 37107 won 339 ontime 89.0% steps 498
+s1 v1fx day 6 margin 2529 rev 37107 won 339 ontime 89.0% steps 511
+s1 v1fx day 7 margin 1748 rev 40845 won 339 ontime 89.4% steps 551
+s1 v1fx day 8 margin 1735 rev 40876 won 339 ontime 89.4% steps 587
+RESULT s1 v1fx margin 1735.05 revenue 40876 won 339 ontime 89.4% undelivered 0.0% ranked false steps 620 secs 103 stats {"quoted":969,"declined":70,"won":343,"lost":626,"posts":379,"refused":5,"offers":0,"offersAccepted":0}

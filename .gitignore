@@ -1,0 +1,6 @@
+# the team key never goes into the repo
+.key
+*.key
+node_modules/
+__pycache__/
+*.pid

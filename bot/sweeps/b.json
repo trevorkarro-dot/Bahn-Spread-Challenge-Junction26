@@ -1,0 +1,16 @@
+{
+  "b-base": {"rampAwake": 9999, "minAwake": 360},
+  "b-pow2": {"rampAwake": 9999, "minAwake": 360, "rampPow": 2},
+  "b-pow3": {"rampAwake": 9999, "minAwake": 360, "rampPow": 3},
+  "b-pow05": {"rampAwake": 9999, "minAwake": 360, "rampPow": 0.6},
+  "b-cap140": {"rampAwake": 9999, "minAwake": 360, "feeCap": 1.4},
+  "b-cap130p2": {"rampAwake": 9999, "minAwake": 360, "feeCap": 1.3, "rampPow": 2},
+  "b-start75": {"rampAwake": 9999, "minAwake": 360, "feeStart": 0.75},
+  "b-start75p2": {"rampAwake": 9999, "minAwake": 360, "feeStart": 0.75, "rampPow": 2},
+  "b-lead120": {"rampAwake": 9999, "minAwake": 360, "rampLead": 120},
+  "b-lead320": {"rampAwake": 9999, "minAwake": 360, "rampLead": 320},
+  "b-awake480": {"rampAwake": 9999, "minAwake": 480},
+  "b-steps16": {"rampAwake": 9999, "minAwake": 360, "feeSteps": 16},
+  "b-steps3": {"rampAwake": 9999, "minAwake": 360, "feeSteps": 3},
+  "b-nooffer": {"rampAwake": 9999, "minAwake": 360, "offers": false}
+}

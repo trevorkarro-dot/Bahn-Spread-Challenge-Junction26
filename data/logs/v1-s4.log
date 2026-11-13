@@ -1,0 +1,10 @@
+s4 v1 day 0 margin 967 rev 2391 won 121 ontime 100.0% steps 86
+s4 v1 day 1 margin 6920 rev 16058 won 215 ontime 96.1% steps 184
+s4 v1 day 2 margin 10091 rev 26176 won 296 ontime 87.0% steps 297
+s4 v1 day 3 margin 13562 rev 37257 won 346 ontime 88.2% steps 389
+s4 v1 day 4 margin 18058 rev 49051 won 427 ontime 90.0% steps 480
+s4 v1 day 5 margin 18804 rev 51177 won 427 ontime 90.4% steps 517
+s4 v1 day 6 margin 18804 rev 51177 won 427 ontime 90.4% steps 532
+s4 v1 day 7 margin 19968 rev 57289 won 427 ontime 90.6% steps 573
+s4 v1 day 8 margin 19440 rev 57656 won 427 ontime 90.6% steps 610
+RESULT s4 v1 margin 17119.61 revenue 57656 won 427 ontime 90.6% undelivered 1.2% ranked true steps 643 secs 110 stats {"quoted":956,"declined":75,"won":431,"lost":525,"posts":472,"refused":8,"offers":7595,"offersAccepted":9}

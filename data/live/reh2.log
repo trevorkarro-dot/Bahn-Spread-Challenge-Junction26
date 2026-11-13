@@ -1,0 +1,24 @@
+2026-11-13T20:38:03.303Z Rehearsal world w426c62eec2bd2c900eac, seed s3, level 8, speed 1.
+2026-11-13T20:38:03.360Z joined at Mon0 00:00: 0 events replayed, 0 orders, 0 open gigs, 0 booked, 0 open requests, in 33 ms
+2026-11-13T20:43:15.441Z Mon done: margin 201 revenue 840 won 66 on time 100.0% | actions 775 in 299 batches, quote ms median 16 max 90, late quotes 0, refused {"offer":10}, queue 0
+2026-11-13T20:44:33.408Z stopped by: Error: rehearsed crash at Tue1 09:20
+    at playLive (file:///mnt/data/trevor/spread/bot/live.ts:375:17)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async main (file:///mnt/data/trevor/spread/bot/live.ts:507:7)
+    at async file:///mnt/data/trevor/spread/bot/live.ts:520:1. Rebuilding the books.
+2026-11-13T20:44:33.859Z joined at Tue1 09:21: 2132 events replayed, 67 orders, 3 open gigs, 40 booked, 4 open requests, in 150 ms
+2026-11-13T20:48:27.416Z Tue done: margin 1704 revenue 5563 won 145 on time 100.0% | actions 2062 in 639 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":25}, queue 0
+2026-11-13T20:53:39.450Z Wed done: margin 3631 revenue 11901 won 211 on time 98.6% | actions 3224 in 942 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":46,"reprice":1}, queue 0
+2026-11-13T20:53:48.432Z stopped by: Error: rehearsed crash at Thu3 03:01
+    at playLive (file:///mnt/data/trevor/spread/bot/live.ts:375:17)
+    at async main (file:///mnt/data/trevor/spread/bot/live.ts:507:7)
+    at async file:///mnt/data/trevor/spread/bot/live.ts:520:1. Rebuilding the books.
+2026-11-13T20:53:49.171Z joined at Thu3 03:12: 9259 events replayed, 211 orders, 12 open gigs, 53 booked, 0 open requests, in 433 ms
+2026-11-13T20:58:54.798Z Thu done: margin 6047 revenue 17737 won 290 on time 99.0% | actions 4242 in 1235 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":61,"reprice":2}, queue 0
+2026-11-13T20:58:54.805Z slow lap: 1282 ms at Fri4 00:13, 20 events waiting, 0 actions queued
+2026-11-13T21:04:03.520Z Fri done: margin 10191 revenue 26991 won 341 on time 98.4% | actions 5744 in 1498 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":75,"reprice":4}, queue 0
+2026-11-13T21:06:03.406Z Sat done: margin 10446 revenue 27591 won 341 on time 98.4% | actions 6202 in 1530 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":77,"reprice":4}, queue 0
+2026-11-13T21:07:15.427Z Sun done: margin 10446 revenue 27591 won 341 on time 98.4% | actions 6301 in 1538 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":77,"reprice":4}, queue 0
+2026-11-13T21:10:03.370Z Mon done: margin 11413 revenue 33172 won 341 on time 97.9% | actions 6338 in 1555 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":77,"reprice":4}, queue 0
+2026-11-13T21:11:15.401Z Tue done: margin 11426 revenue 33926 won 341 on time 97.9% | actions 6338 in 1555 batches, quote ms median 16 max 120, late quotes 0, refused {"offer":77,"reprice":4}, queue 0
+2026-11-13T21:12:22.145Z END margin 11426.40 revenue 33926 won 341 ontime 97.9% undelivered 0.0% ranked true | joins 3 errors 2 stalls 1 events 17562 actions 6338 batches 1555 quote ms median 16 p99 74 max 120 late quotes 0 refused {"offer":77,"reprice":4} | ../data/live/reh2-s3-L8.json

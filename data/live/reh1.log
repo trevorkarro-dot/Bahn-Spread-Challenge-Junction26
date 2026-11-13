@@ -1,0 +1,22 @@
+2026-11-13T20:27:31.421Z Rehearsal world w4402cac4d992dce06813, seed s1, level 8, speed 4.
+2026-11-13T20:27:31.481Z joined at Mon0 00:00: 0 events replayed, 0 orders, 0 open gigs, 0 booked, 0 open requests, in 33 ms
+2026-11-13T20:28:49.503Z Mon done: margin 214 revenue 653 won 87 on time 100.0% | actions 916 in 298 batches, quote ms median 15 max 54, late quotes 0, refused {"offer":6}, queue 0
+2026-11-13T20:30:07.474Z Tue done: margin 2537 revenue 7876 won 155 on time 92.8% | actions 2117 in 600 batches, quote ms median 15 max 61, late quotes 0, refused {"offer":7,"reprice":1}, queue 0
+2026-11-13T20:31:25.520Z Wed done: margin 4342 revenue 14702 won 212 on time 95.1% | actions 3087 in 904 batches, quote ms median 15 max 61, late quotes 0, refused {"offer":13,"reprice":4}, queue 0
+2026-11-13T20:32:43.512Z Thu done: margin 6459 revenue 20495 won 279 on time 96.5% | actions 4247 in 1197 batches, quote ms median 15 max 69, late quotes 0, refused {"offer":16,"reprice":7}, queue 0
+2026-11-13T20:33:42.188Z quote for R01015 refused: Request R01015 is not open
+2026-11-13T20:33:42.210Z quote for R01016 refused: Request R01016 is not open
+2026-11-13T20:33:42.210Z quote for R01017 refused: Request R01017 is not open
+2026-11-13T20:33:42.210Z quote for R01018 refused: Request R01018 is not open
+2026-11-13T20:33:42.210Z quote for R01019 refused: Request R01019 is not open
+2026-11-13T20:33:42.210Z quote for R01020 refused: Request R01020 is not open
+2026-11-13T20:33:42.210Z quote for R01021 refused: Request R01021 is not open
+2026-11-13T20:33:42.210Z quote for R01022 refused: Request R01022 is not open
+2026-11-13T20:33:42.210Z quote for R01023 refused: Request R01023 is not open
+2026-11-13T20:33:42.210Z quote for R01024 refused: Request R01024 is not open
+2026-11-13T20:34:04.081Z Fri done: margin 9900 revenue 29898 won 317 on time 96.5% | actions 5061 in 1419 batches, quote ms median 15 max 69, late quotes 10, refused {"offer":21,"reprice":8,"quote":10}, queue 0
+2026-11-13T20:34:31.598Z Sat done: margin 10148 revenue 30489 won 317 on time 96.6% | actions 5518 in 1450 batches, quote ms median 15 max 69, late quotes 10, refused {"offer":31,"reprice":8,"quote":10}, queue 0
+2026-11-13T20:34:49.479Z Sun done: margin 10148 revenue 30489 won 317 on time 96.6% | actions 5697 in 1458 batches, quote ms median 15 max 69, late quotes 10, refused {"offer":31,"reprice":8,"quote":10}, queue 0
+2026-11-13T20:35:31.639Z Mon done: margin 10995 revenue 33505 won 317 on time 96.8% | actions 5786 in 1482 batches, quote ms median 15 max 69, late quotes 10, refused {"offer":34,"reprice":9,"quote":10}, queue 0
+2026-11-13T20:35:49.551Z Tue done: margin 10995 revenue 33505 won 317 on time 96.8% | actions 5786 in 1482 batches, quote ms median 15 max 69, late quotes 10, refused {"offer":34,"reprice":9,"quote":10}, queue 0
+2026-11-13T20:36:06.861Z END margin 10995.17 revenue 33505 won 317 ontime 96.8% undelivered 0.0% ranked true | joins 1 errors 0 events 24384 actions 5786 batches 1482 quote ms median 15 p99 50 max 69 late quotes 10 refused {"offer":34,"reprice":9,"quote":10} | ../data/live/reh1-s1-L8.json
