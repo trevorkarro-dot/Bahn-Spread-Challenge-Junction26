@@ -1,14 +1,19 @@
 """Paired comparison of sweep variants against a base, seed by seed, from data/results.log.
-python tools/cmp.py <base-tag> <prefix-or-tag> [...]   (the last result of each seed and tag counts)"""
+python tools/cmp.py [--only=t,m] <base-tag> <prefix-or-tag> [...]   (the last result of each seed and tag counts;
+--only keeps the seeds whose names start with one of the given prefixes)"""
 import sys, math, collections
 
-base_tag, wanted = sys.argv[1], sys.argv[2:]
+args = [a for a in sys.argv[1:] if not a.startswith('--only=')]
+only = tuple(x for a in sys.argv[1:] if a.startswith('--only=') for x in a[7:].split(','))
+base_tag, wanted = args[0], args[1:]
 res = collections.defaultdict(dict)
 for line in open('data/results.log', encoding='utf8'):
     p = line.split()
     if len(p) < 16 or p[1] != 'RESULT':
         continue
     seed, tag = p[2], p[3]
+    if only and not seed.startswith(only):
+        continue
     res[tag][seed] = dict(margin=float(p[5]), won=int(p[9]), ontime=float(p[11].rstrip('%')), ranked=p[15] == 'true')
 base = res[base_tag]
 tags = sorted(t for t in res if t != base_tag and any(t == w or t.startswith(w) for w in wanted))

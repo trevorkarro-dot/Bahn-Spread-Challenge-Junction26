@@ -1,0 +1,12 @@
+2026-11-13T22:33:58.848Z Rehearsal world w5a4a76e53c7a4dfb5e4f, seed s3, level 8, speed 4.
+2026-11-13T22:33:58.911Z joined at Mon0 00:00: 0 events replayed, 0 orders, 0 open gigs, 0 booked, 0 open requests, in 33 ms
+2026-11-13T22:35:17.020Z Mon done: margin 221 revenue 884 won 66 on time 100.0% | actions 766 in 293 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":16}, queue 0
+2026-11-13T22:36:34.942Z Tue done: margin 1799 revenue 5758 won 146 on time 100.0% | actions 1800 in 615 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":28}, queue 0
+2026-11-13T22:37:52.993Z Wed done: margin 3686 revenue 11695 won 215 on time 98.0% | actions 2699 in 912 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":34,"reprice":1}, queue 0
+2026-11-13T22:39:10.929Z Thu done: margin 5909 revenue 17024 won 295 on time 98.5% | actions 3648 in 1202 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:40:28.948Z Fri done: margin 10624 revenue 28176 won 346 on time 98.4% | actions 4702 in 1450 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:40:58.955Z Sat done: margin 10927 revenue 28884 won 346 on time 98.4% | actions 5025 in 1482 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:41:16.952Z Sun done: margin 10927 revenue 28884 won 346 on time 98.4% | actions 5095 in 1489 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:41:58.983Z Mon done: margin 12489 revenue 34095 won 346 on time 97.7% | actions 5137 in 1504 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:42:17.037Z Tue done: margin 12528 revenue 34457 won 346 on time 97.7% | actions 5137 in 1504 batches, quote ms median 16 max 80, late quotes 0, refused {"offer":36,"reprice":1}, queue 0
+2026-11-13T22:42:33.854Z END margin 12527.50 revenue 34457 won 346 ontime 97.7% undelivered 0.0% ranked true | joins 1 errors 0 stalls 0 events 16588 actions 5137 batches 1504 quote ms median 16 p99 47 max 80 late quotes 0 refused {"offer":36,"reprice":1} | ../data/live/reh3-s3-L8.json

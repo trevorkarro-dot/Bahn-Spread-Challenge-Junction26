@@ -798,6 +798,8 @@ export class Desk {
     })
     for (const leg of legs) if (ord.legs[leg]) ord.legs[leg]!.gigId = gig.id
     ord.firstPostAt ??= gig.postedAt
+    // The late fee curve counts from the order's first late post.
+    if (gig.postedAt > ord.order.lastPickupAt) ord.lateSince ??= gig.postedAt
   }
 
   /** After a replay of the history, the world's orders and gigs as they stand overrule what the replay inferred. */
