@@ -1,0 +1,241 @@
+{
+ "w5-top2": {
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27
+ },
+ "w5-top3": {
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120
+ },
+ "w5-top5": {
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120,
+  "deliveryBuffer": 20,
+  "market.war": -0.263
+ },
+ "w5-top7": {
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120,
+  "deliveryBuffer": 20,
+  "market.war": -0.263,
+  "lateStep": 0.07,
+  "urgentStart": 1.4
+ },
+ "w5-top3x": {
+  "lateStart": 0.95,
+  "lambdaPerOpen": 21,
+  "minSlack": 90
+ },
+ "w5-top5wu": {
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120,
+  "deliveryBuffer": 20,
+  "market.war": -0.183
+ },
+ "w5-om-pp": {
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  },
+  "quotePrivatePickup": true
+ },
+ "w5-om-pp110": {
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  },
+  "quotePrivatePickup": true,
+  "privateFee": 1.1
+ },
+ "w5-om-top2": {
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  },
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27
+ },
+ "w5-om3-top2": {
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  },
+  "offerMin": 0.003,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27
+ },
+ "w5-pp-aw": {
+  "quotePrivatePickup": true,
+  "minAwake": 360
+ },
+ "w5-pp110-aw": {
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "minAwake": 360
+ },
+ "w5-tr-om": {
+  "quoteTradeIns": true,
+  "tradeSlot": 0,
+  "tradeLate": 0.2,
+  "costTrade": 0.5,
+  "privateFee": 1.25,
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  }
+ },
+ "w5-tr-pp": {
+  "quoteTradeIns": true,
+  "tradeSlot": 0,
+  "tradeLate": 0.2,
+  "costTrade": 0.5,
+  "privateFee": 1.25,
+  "quotePrivatePickup": true
+ },
+ "w5-pp-top3": {
+  "quotePrivatePickup": true,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120
+ },
+ "w5-pp110-top2": {
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27
+ },
+ "w5-pp110-top3": {
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120
+ },
+ "w5-pp110-top5": {
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120,
+  "deliveryBuffer": 20,
+  "market.war": -0.263
+ },
+ "w5-om-pp110-top2": {
+  "offerModel": {
+   "one": -5.992,
+   "deAt": 1.637,
+   "de30": 1.434,
+   "de80": 0.6,
+   "pu30": -0.284,
+   "here": -0.184,
+   "worked": 0.958,
+   "seen": 0.101,
+   "long": -1.181,
+   "fee": -1.442,
+   "today": -0.437,
+   "view30": 2.303,
+   "view120": 1.991,
+   "view600": 1.255,
+   "viewOld": -0.559,
+   "hour": -1.593,
+   "evening": -0.442,
+   "lnDone": 0.387
+  },
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27
+ },
+ "w5-pp110-aw-top3": {
+  "quotePrivatePickup": true,
+  "privateFee": 1.1,
+  "minAwake": 300,
+  "lateStart": 1.05,
+  "lambdaPerOpen": 27,
+  "minSlack": 120
+ }
+}

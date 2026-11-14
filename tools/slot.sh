@@ -29,7 +29,7 @@ if [ "$seeds" != wait ]; then
   sleep 3
 fi
 while true; do
-  out=$($S "cd $R && if [ -f data/slot$slot-$name.done ]; then cat data/slot$slot-$name.done; elif [ \$(date -u +%H%M) -ge 1122 ] && [ \$(date -u +%d) = 14 ] && [ \$(date -u +%H) -lt 13 ]; then echo 'too late: stopped for the test final'; else echo running; fi" 2>/dev/null) || out=unreachable
+  out=$($S "cd $R && if [ -f data/slot$slot-$name.done ]; then cat data/slot$slot-$name.done; elif ! flock -n data/slot$slot.lock true; then echo running; else echo 'too bad: the sweep is not running and left no result line'; fi" 2>/dev/null) || out=unreachable
   case "$out" in
     done*|too*) echo "$out"; break ;;
   esac

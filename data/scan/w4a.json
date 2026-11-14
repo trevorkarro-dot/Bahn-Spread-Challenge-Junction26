@@ -1,0 +1,20 @@
+{
+ "w4-buf20-sl120": {"deliveryBuffer": 20, "minSlack": 120},
+ "w4-buf20-sl120-ds240": {"deliveryBuffer": 20, "minSlack": 120, "dropSafe": 240},
+ "w4-buf10-sl90": {"deliveryBuffer": 10, "minSlack": 90},
+ "w4-buf40-sl180": {"deliveryBuffer": 40, "minSlack": 180},
+ "w4-aw180-g": {"minAwake": 180, "lateTarget": 0.025, "ctrlPow": 4},
+ "w4-aw200-g": {"minAwake": 200, "lateTarget": 0.025, "ctrlPow": 4},
+ "w4-aw180-sh7": {"minAwake": 180, "lateShadow": 7000},
+ "w4-aw300-l": {"minAwake": 300, "lateTarget": 0.035, "ctrlPow": 2},
+ "w4-aw300-sh5-ll3": {"minAwake": 300, "lateShadow": 5000, "lateLoss": 0.3},
+ "w4-sh7-ll5": {"lateShadow": 7000, "lateLoss": 0.5},
+ "w4-sh5-ll3": {"lateShadow": 5000, "lateLoss": 0.3},
+ "w4-sh7-ll3": {"lateShadow": 7000, "lateLoss": 0.3},
+ "w4-sh8-lt35": {"lateShadow": 8000, "lateTarget": 0.035},
+ "w4-ds240-db105": {"dropSafe": 240, "dropBump": 1.05},
+ "w4-ds240-db115": {"dropSafe": 240, "dropBump": 1.15},
+ "w4-ds180-db100": {"dropSafe": 180, "dropBump": 1.0},
+ "w4-aw200-g-buf20-sl120": {"minAwake": 200, "lateTarget": 0.025, "ctrlPow": 4, "deliveryBuffer": 20, "minSlack": 120},
+ "w4-buf20-sl120-sh7": {"deliveryBuffer": 20, "minSlack": 120, "lateShadow": 7000}
+}

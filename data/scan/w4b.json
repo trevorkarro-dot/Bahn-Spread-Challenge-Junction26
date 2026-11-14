@@ -1,0 +1,10 @@
+{
+ "w4-buf20-sl120-sh7": {"deliveryBuffer": 20, "minSlack": 120, "lateShadow": 7000},
+ "w4-ds240-db105": {"dropSafe": 240, "dropBump": 1.05},
+ "w4-sh8-lt35": {"lateShadow": 8000, "lateTarget": 0.035},
+ "w4-buf20-sl120": {"deliveryBuffer": 20, "minSlack": 120},
+ "w4-aw300-l": {"minAwake": 300, "lateTarget": 0.035, "ctrlPow": 2},
+ "w4-buf20-sl120-sh7-ds240-db105": {"deliveryBuffer": 20, "minSlack": 120, "lateShadow": 7000, "dropSafe": 240, "dropBump": 1.05},
+ "w4-buf20-sl120-sh8-lt35": {"deliveryBuffer": 20, "minSlack": 120, "lateShadow": 8000, "lateTarget": 0.035},
+ "w4-sh8-lt35-ds240-db105": {"lateShadow": 8000, "lateTarget": 0.035, "dropSafe": 240, "dropBump": 1.05}
+}

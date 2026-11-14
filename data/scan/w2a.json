@@ -1,0 +1,20 @@
+{
+ "w2-sc06-fk1125": {"market.scale": 0.06, "feeK": 1.125},
+ "w2-sc065-fk1125": {"market.scale": 0.065, "feeK": 1.125},
+ "w2-sc06-fk110": {"market.scale": 0.06, "feeK": 1.10},
+ "w2-sc06-pl157": {"market.scale": 0.06, "market.priorLevel": 1.57},
+ "w2-sc06-pl151": {"market.scale": 0.06, "market.priorLevel": 1.51},
+ "w2-sc08-pl157": {"market.scale": 0.08, "market.priorLevel": 1.57},
+ "w2-fk1125-lpo27": {"feeK": 1.125, "lambdaPerOpen": 27},
+ "w2-fk1125-lpo45": {"feeK": 1.125, "lambdaPerOpen": 45},
+ "w2-fk1175-lpo27": {"feeK": 1.175, "lambdaPerOpen": 27},
+ "w2-lpo27-lfo20": {"lambdaPerOpen": 27, "lambdaFreeOpen": 20},
+ "w2-lpo21-lfo10": {"lambdaPerOpen": 21, "lambdaFreeOpen": 10},
+ "w2-calm": {"market.shockSd": 0.02, "market.placeShockSd": 0.01, "market.daySd": 0.02},
+ "w2-lively": {"market.shockSd": 0.04, "market.placeShockSd": 0.03, "market.daySd": 0.04},
+ "w2-ev-strong": {"market.war": -0.263, "market.outage": 0.302},
+ "w2-ev-weak": {"market.war": -0.183, "market.outage": 0.222},
+ "w2-tr-up": {"market.trustGain": 0.0156, "trustValue": 1.2},
+ "w2-tr-dn": {"market.trustGain": 0.0092, "trustValue": 0.8},
+ "w2-lpo27-war183-sc065": {"lambdaPerOpen": 27, "market.war": -0.183, "market.scale": 0.065}
+}

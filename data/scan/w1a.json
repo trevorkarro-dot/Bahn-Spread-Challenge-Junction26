@@ -1,0 +1,21 @@
+{
+ "w1-c13h48": {"feeCap": 1.3, "feeHold": 48},
+ "w1-c15h19": {"feeCap": 1.5, "feeHold": 19},
+ "w1-c13l160": {"feeCap": 1.3, "rampLead": 160},
+ "w1-c15l240": {"feeCap": 1.5, "rampLead": 240},
+ "w1-p2l240": {"rampPow": 2, "rampLead": 240},
+ "w1-p11l160": {"rampPow": 1.1, "rampLead": 160},
+ "w1-c13p11": {"feeCap": 1.3, "rampPow": 1.1},
+ "w1-c15p2": {"feeCap": 1.5, "rampPow": 2},
+ "w1-p2h19s24": {"rampPow": 2, "feeHold": 19, "feeSteps": 24},
+ "w1-ls105e90": {"lateStart": 1.05, "lateEvery": 90},
+ "w1-ls100e90": {"lateStart": 1.0, "lateEvery": 90},
+ "w1-ls105e180s07": {"lateStart": 1.05, "lateEvery": 180, "lateStep": 0.07},
+ "w1-ls095e80s13": {"lateStart": 0.95, "lateEvery": 80, "lateStep": 0.13},
+ "w1-ls125e180s07": {"lateStart": 1.25, "lateEvery": 180, "lateStep": 0.07},
+ "w1-us14p30": {"urgentStart": 1.4, "urgentStep": 0.3},
+ "w1-us12e15p30": {"urgentStart": 1.2, "urgentEvery": 15, "urgentStep": 0.3},
+ "w1-us18e25p20": {"urgentStart": 1.8, "urgentEvery": 25, "urgentStep": 0.2},
+ "w1-ls105us14": {"lateStart": 1.05, "urgentStart": 1.4},
+ "w1-ls100e90us14p30": {"lateStart": 1.0, "lateEvery": 90, "urgentStart": 1.4, "urgentStep": 0.3}
+}

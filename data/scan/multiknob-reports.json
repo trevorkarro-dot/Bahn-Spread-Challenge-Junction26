@@ -1,0 +1,1086 @@
+{
+ "reports": [
+  {
+   "slot": 1,
+   "tested": [
+    {
+     "tag": "w1-c13h48",
+     "changes": "feeCap 1.3, feeHold 48",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -85,
+     "se": 121,
+     "t": -0.7,
+     "ontime": 97,
+     "low": 93.4
+    },
+    {
+     "tag": "w1-c15h19",
+     "changes": "feeCap 1.5, feeHold 19",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -250,
+     "se": 154,
+     "t": -1.6,
+     "ontime": 97.1,
+     "low": 94.1
+    },
+    {
+     "tag": "w1-c13l160",
+     "changes": "feeCap 1.3, rampLead 160",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -186,
+     "se": 174,
+     "t": -1.1,
+     "ontime": 97.1,
+     "low": 94
+    },
+    {
+     "tag": "w1-c15l240",
+     "changes": "feeCap 1.5, rampLead 240",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -430,
+     "se": 182,
+     "t": -2.4,
+     "ontime": 97.1,
+     "low": 93
+    },
+    {
+     "tag": "w1-p2l240",
+     "changes": "rampPow 2, rampLead 240",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -160,
+     "se": 146,
+     "t": -1.1,
+     "ontime": 97.4,
+     "low": 93.9
+    },
+    {
+     "tag": "w1-p11l160",
+     "changes": "rampPow 1.1, rampLead 160",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -75,
+     "se": 224,
+     "t": -0.3,
+     "ontime": 97.3,
+     "low": 93.3
+    },
+    {
+     "tag": "w1-c13p11",
+     "changes": "feeCap 1.3, rampPow 1.1",
+     "worlds": "16 usual (only 9 of the 16 played before the 11:21 stop; the difference is paired on those 9)",
+     "n": 9,
+     "diff": -4,
+     "se": 121,
+     "t": 0,
+     "ontime": 97.6,
+     "low": 96
+    },
+    {
+     "tag": "w1-c15p2",
+     "changes": "feeCap 1.5, rampPow 2",
+     "worlds": "16 usual (only 6 of the 16 played before the 11:21 stop; the difference is paired on those 6)",
+     "n": 6,
+     "diff": 105,
+     "se": 314,
+     "t": 0.3,
+     "ontime": 97.9,
+     "low": 96.9
+    }
+   ],
+   "best": [
+    {
+     "tag": "w1-c13p11",
+     "changes": "feeCap 1.3, rampPow 1.1",
+     "usual": "stage A only, cut at 9 of 16 worlds: diff -4, se 121, t -0.0, n 9, lowest on-time 96.0 (the two hardest worlds m7 and m11 are not among the 9); the 40 usual worlds were not played",
+     "fresh": "not played",
+     "verdict": "No evidence either way: level with the base on 9 worlds, unfinished; not a follow-up candidate on these numbers."
+    },
+    {
+     "tag": "w1-c15p2",
+     "changes": "feeCap 1.5, rampPow 2",
+     "usual": "stage A only, cut at 6 of 16 worlds: diff +105, se 314, t +0.3, n 6, lowest on-time 96.9 (m7 and m11 not among the 6); the 40 usual worlds were not played",
+     "fresh": "not played",
+     "verdict": "The only variant above zero, but on 6 worlds with se 314 it is noise; not a follow-up candidate on these numbers."
+    },
+    {
+     "tag": "w1-c13h48",
+     "changes": "feeCap 1.3, feeHold 48",
+     "usual": "stage A, 16 usual worlds: diff -85, se 121, t -0.7, n 16, lowest on-time 93.4 (base 93.4); the 40 usual worlds were not played",
+     "fresh": "not played",
+     "verdict": "Least negative of the six variants that finished 16 worlds, still behind the base; not worth a follow-up."
+    }
+   ],
+   "notes": "Outcome: nothing in slot 1 qualifies for a follow-up. Only stage A was played, and only in part; stages B (40 usual) and C (80 fresh) were not played for any variant.\n\nWhat went wrong: the slot ran at about 4.3 worlds a minute, not the planned 45. Sweep w1a (19 variants x 16 usual worlds = 304 worlds) started at about 10:55:30 UTC and was stopped by the 11:21:00 cut with 111 worlds played. Each of the 4 keys plays 8 worlds at a time (2 variants x its 4 seeds) and a batch took about 5 minutes. Because a slot holds one sweep at a time and nothing may be killed, the slot stayed locked on w1a past 11:14, so no second sweep could start.\n\nNot played at all (11 of 19 variants, they sat later in the file): w1-p2h19s24 (rampPow 2, feeHold 19, feeSteps 24); the whole late ramp set w1-ls105e90 (lateStart 1.05, lateEvery 90), w1-ls100e90 (lateStart 1.0, lateEvery 90), w1-ls105e180s07 (lateStart 1.05, lateEvery 180, lateStep 0.07), w1-ls095e80s13 (lateStart 0.95, lateEvery 80, lateStep 0.13), w1-ls125e180s07 (lateStart 1.25, lateEvery 180, lateStep 0.07); the whole urgent ramp set w1-us14p30 (urgentStart 1.4, urgentStep 0.3), w1-us12e15p30 (urgentStart 1.2, urgentEvery 15, urgentStep 0.3), w1-us18e25p20 (urgentStart 1.8, urgentEvery 25, urgentStep 0.2); and the cross moves w1-ls105us14 (lateStart 1.05, urgentStart 1.4), w1-ls100e90us14p30 (lateStart 1.0, lateEvery 90, urgentStart 1.4, urgentStep 0.3). The late and urgent ramps, where the only positive singles were (lateStart down +96, urgentStart down +22), are therefore still untested as joint moves. The changes file is ready to replay as it stands: C:\\Users\\trevo\\spread\\data\\scan\\w1a.json (sweep file C:\\Users\\trevo\\spread\\bot\\sweeps\\w1a.json; a replay needs a new sweep name).\n\nWhat the runs showed (normal ramp only, 16 usual worlds, se 120 to 220, so each line alone is weak):\n- All six finished joint moves of feeCap / feeHold / rampLead / rampPow are behind the base (base on these 16 worlds: mean 17720, on-time 97.3, lowest 93.4).\n- No compensation between cap and hold or cap and lead: lower cap with longer hold -85 (t -0.7), lower cap with later cap arrival -186 (t -1.1), higher cap with shorter hold -250 (t -1.6), higher cap reached earlier -430 (t -2.4, the clearest result; lowest on-time 93.0, 0.4 under the base). Raising the cap looks worse than lowering it in both pairs, in line with the singles (feeCap up -158, down -177).\n- No compensation between power and lead either: rampPow 2 with rampLead 240 -160 (t -1.1), rampPow 1.1 with rampLead 160 -75 (t -0.3, se 224, worst world -2678).\n- The cap with power pair was cut: feeCap 1.3 + rampPow 1.1 is -4 on 9 worlds, feeCap 1.5 + rampPow 2 is +105 on 6 worlds (se 314). Neither set of worlds includes m7 or m11, the two worlds with the lowest on-time share, so their on-time floors (96.0, 96.9) are not comparable with the base's 93.4.\n- Read as a whole this agrees with the single-knob search: cand5 sits at a local optimum for the normal ramp, and these two-knob moves did not find a ridge.\n\nDeviation to disclose: while working out why no results were arriving (around 11:05 UTC) I ran four extra read-only commands on the server inside /mnt/data/trevor/spread besides date and cmp.py: ls of data/slot1-*, tail and wc -l of data/logs/slot1.out, and grep -c of \"w1-\" in data/results.log. Nothing was written, killed or removed, and .key/.keys were never opened. Locally I also read tools/slotrun.sh and the head of bot/sweep.ts to understand the batching. No other files were created beyond the two w1a files above."
+  },
+  {
+   "slot": 2,
+   "tested": [
+    {
+     "tag": "w2-sc06-fk1125",
+     "changes": "market.scale 0.06, feeK 1.125",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -28,
+     "se": 222,
+     "t": -0.1,
+     "ontime": 97,
+     "low": 93.6
+    },
+    {
+     "tag": "w2-sc065-fk1125",
+     "changes": "market.scale 0.065, feeK 1.125",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 128,
+     "se": 255,
+     "t": 0.5,
+     "ontime": 97.3,
+     "low": 92.6
+    },
+    {
+     "tag": "w2-sc06-fk110",
+     "changes": "market.scale 0.06, feeK 1.10",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -397,
+     "se": 327,
+     "t": -1.2,
+     "ontime": 96.9,
+     "low": 93.9
+    },
+    {
+     "tag": "w2-sc06-pl157",
+     "changes": "market.scale 0.06, market.priorLevel 1.57",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -53,
+     "se": 212,
+     "t": -0.2,
+     "ontime": 97.2,
+     "low": 94.5
+    },
+    {
+     "tag": "w2-sc06-pl151",
+     "changes": "market.scale 0.06, market.priorLevel 1.51",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -116,
+     "se": 190,
+     "t": -0.6,
+     "ontime": 97,
+     "low": 92.9
+    },
+    {
+     "tag": "w2-sc08-pl157",
+     "changes": "market.scale 0.08, market.priorLevel 1.57",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -158,
+     "se": 132,
+     "t": -1.2,
+     "ontime": 97.6,
+     "low": 95.3
+    },
+    {
+     "tag": "w2-fk1125-lpo27",
+     "changes": "feeK 1.125, lambdaPerOpen 27",
+     "worlds": "16 usual (cut at 11:21: only 12 of the 16 played)",
+     "n": 12,
+     "diff": 47,
+     "se": 101,
+     "t": 0.5,
+     "ontime": 97.6,
+     "low": 95.5
+    },
+    {
+     "tag": "w2-fk1125-lpo45",
+     "changes": "feeK 1.125, lambdaPerOpen 45",
+     "worlds": "16 usual (cut at 11:21: only 11 of the 16 played)",
+     "n": 11,
+     "diff": 222,
+     "se": 187,
+     "t": 1.2,
+     "ontime": 98,
+     "low": 96.5
+    }
+   ],
+   "best": [
+    {
+     "tag": "w2-fk1125-lpo45",
+     "changes": "feeK 1.125, lambdaPerOpen 45",
+     "usual": "Stage A only and incomplete: diff +222, se 187, t +1.2, n 11 (of 16 usual worlds; cut at 11:21), up 8/11, worst -505, on-time 98.0, lowest on-time 96.5 (m3). The 11 worlds played do not include every world of the 16, so the lowest on-time is not comparable with the base's 93.4 (m7) on 16. The 24 other usual worlds were not played.",
+     "fresh": "not played",
+     "verdict": "Not established: the only variant near t 1 but on 11 worlds only and never on the 40 or the fresh worlds; the most interesting candidate of this slot for a re-run (lower price level with stronger backlog pressure, small worst-case loss)."
+    },
+    {
+     "tag": "w2-sc065-fk1125",
+     "changes": "market.scale 0.065, feeK 1.125",
+     "usual": "Stage A only: diff +128, se 255, t +0.5, n 16, up 11/16, worst -2258, on-time 97.3, lowest on-time 92.6 (m11; base 93.4 on the same 16, base m11 93.7), 1 world under 93. The 24 other usual worlds were not played.",
+     "fresh": "not played",
+     "verdict": "Not worth a follow-up as it stands: within noise (t 0.5) and the on-time floor is 0.8 under the base's (m11 92.6 against 93.7), which fails the half-point rule."
+    },
+    {
+     "tag": "w2-fk1125-lpo27",
+     "changes": "feeK 1.125, lambdaPerOpen 27",
+     "usual": "Stage A only and incomplete: diff +47, se 101, t +0.5, n 12 (of 16 usual worlds; cut at 11:21), up 7/12, worst -508, on-time 97.6, lowest on-time 95.5 (m7). The 24 other usual worlds were not played.",
+     "fresh": "not played",
+     "verdict": "Not established: noise level on 12 worlds; no sign that the lambdaPerOpen 27 single (+109 on 40) gains from a lower feeK."
+    }
+   ],
+   "notes": "WHAT WENT WRONG: the slot was about ten times slower than the planned 45 worlds a minute. Sweep w2a (18 variants x 16 usual worlds = 288 worlds) started at 10:54:58 UTC; sweep.ts plays the variants in file order, 8 worlds at a time on each of the 4 keys, so results arrive two variants (32 worlds) a batch, and the batches ended at about 11:05 or earlier, 11:09:27, 11:15:38, with the fourth cut at 11:21:00. Total: 119 worlds in 26 minutes (about 4.6 a minute, presumably five slots sharing the server and the game server). Only 6 variants reached 16 worlds and 2 more reached 12 and 11; the other 10 were never played. Stage B (24 other usual worlds), stage C (80 fresh worlds) and a second stage A were NOT played: the slot was locked by w2a until the cut and I was not allowed to stop it. Every number above is 16-world (or fewer) stage A data with se 100-330, so nothing is established.\n\nNOT PLAYED (in bot/sweeps/w2a.json, zero results): w2-fk1175-lpo27 (feeK 1.175, lambdaPerOpen 27), w2-lpo27-lfo20 (lambdaPerOpen 27, lambdaFreeOpen 20), w2-lpo21-lfo10 (lambdaPerOpen 21, lambdaFreeOpen 10), w2-calm (shockSd 0.02, placeShockSd 0.01, daySd 0.02), w2-lively (shockSd 0.04, placeShockSd 0.03, daySd 0.04), w2-ev-strong (war -0.263, outage 0.302), w2-ev-weak (war -0.183, outage 0.222), w2-tr-up (trustGain 0.0156, trustValue 1.2), w2-tr-dn (trustGain 0.0092, trustValue 0.8), w2-lpo27-war183-sc065 (lambdaPerOpen 27, war -0.183, scale 0.065). So the calmer/livelier model, war with outage, and the trust pair were not tested at all; because of the file order only the scale group and two feeK-with-lambdaPerOpen variants ran.\n\nWHAT THE RUNS SHOWED (all weak evidence, 16 worlds):\n- Narrower scale with lower feeK does not look like a gain: scale 0.06 + feeK 1.125 -28 (t -0.1), scale 0.065 + feeK 1.125 +128 (t +0.5) with the m11 on-time down to 92.6, scale 0.06 + feeK 1.10 -397 (t -1.2, worst world -4538, min margin 9849). Lower feeK wins more orders (won 444.2 / 439.2 / 456.7 against the base's 423.7) but average on-time drops (97.0 / 97.3 / 96.9 against 97.3) and the margin does not follow; feeK 1.10 is too low even with the narrow scale.\n- Scale with priorLevel: no direction helps. scale 0.06 + priorLevel 1.57 -53 (t -0.2), scale 0.06 + priorLevel 1.51 -116 (t -0.6, lowest on-time 92.9, 1 world under 93), scale 0.08 + priorLevel 1.57 -158 (t -1.2; fewer wins 411.3, on-time 97.6, floor 95.3). The wider scale with the higher prior is a safer but poorer bot; the narrow scale with the lower prior wins more and lowers the on-time floor. No sign of a scale x priorLevel interaction beyond the sum of the two negative singles.\n- feeK with lambdaPerOpen (cut, 11-12 worlds): feeK 1.125 + lambdaPerOpen 45 +222 (t +1.2 on 11, worst -505, on-time 98.0) against feeK 1.125 + lambdaPerOpen 27 +47 (t +0.5 on 12). This hints that a lower base price pairs with MORE backlog pressure, not less (the opposite pairing of the lambdaPerOpen 27 single), and with a small downside; it is the one joint move here that deserves a re-run on the 40 usual and the fresh worlds. Caution: these two have different world subsets from the others (the base mean on their worlds is lower), and their lowest on-time values are not comparable with the 16-world base floor.\n- On-time floor: every variant stayed ranked in every world played (all above 90%); the lowest single world was 92.6 (w2-sc065-fk1125, m11).\n\nFiles written: C:\\Users\\trevo\\spread\\data\\scan\\w2a.json and C:\\Users\\trevo\\spread\\bot\\sweeps\\w2a.json only. Deviation to disclose: in my first status check at 11:04:59 I also ran two extra read-only commands on the server inside /mnt/data/trevor/spread (ls data/slot2-* and tail -5 data/logs/slot2.out; both printed nothing) beyond the allowed date and cmp.py; after that only date and cmp.py. No worlds were played other than through tools/slot.sh 2."
+  },
+  {
+   "slot": 3,
+   "tested": [
+    {
+     "tag": "w3-mt",
+     "changes": "startFallbackDay.0 1.12, startFallbackDay.3 1.28",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -193,
+     "se": 228,
+     "t": -0.8,
+     "ontime": 97.3,
+     "low": 94.1
+    },
+    {
+     "tag": "w3-mt-ln",
+     "changes": "startFallbackDay.0 1.12, startFallbackDay.3 1.28, startModel.lnOLane -0.855",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -89,
+     "se": 165,
+     "t": -0.5,
+     "ontime": 97.3,
+     "low": 94.2
+    },
+    {
+     "tag": "w3-ln-m97",
+     "changes": "startModel.lnOLane -0.855, costStartMean 0.97",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 41,
+     "se": 172,
+     "t": 0.2,
+     "ontime": 97.3,
+     "low": 94.2
+    },
+    {
+     "tag": "w3-mt-ln-m97",
+     "changes": "startFallbackDay.0 1.12, startFallbackDay.3 1.28, startModel.lnOLane -0.855, costStartMean 0.97",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 22,
+     "se": 146,
+     "t": 0.1,
+     "ontime": 97,
+     "low": 93.5
+    },
+    {
+     "tag": "w3-mt-rev",
+     "changes": "startFallbackDay.0 1.28, startFallbackDay.3 1.12",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 145,
+     "se": 129,
+     "t": 1.1,
+     "ontime": 97.5,
+     "low": 92.9
+    },
+    {
+     "tag": "w3-wide",
+     "changes": "startMin 0.55, startMax 1.0",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -115,
+     "se": 203,
+     "t": -0.6,
+     "ontime": 97.4,
+     "low": 94
+    },
+    {
+     "tag": "w3-narrow",
+     "changes": "startMin 0.65, startMax 0.91",
+     "worlds": "10 of the 16 usual (sweep cut at 11:21 UTC; partial, does not include m7 or m11)",
+     "n": 10,
+     "diff": -257,
+     "se": 184,
+     "t": -1.4,
+     "ontime": 97.7,
+     "low": 96.7
+    },
+    {
+     "tag": "w3-bandup",
+     "changes": "startMin 0.65, startMax 1.0",
+     "worlds": "8 of the 16 usual (sweep cut at 11:21 UTC; partial, does not include m7 or m11)",
+     "n": 8,
+     "diff": -69,
+     "se": 225,
+     "t": -0.3,
+     "ontime": 97.8,
+     "low": 96.5
+    }
+   ],
+   "best": [
+    {
+     "tag": "w3-mt-rev",
+     "changes": "startFallbackDay.0 1.28, startFallbackDay.3 1.12 (Monday opens higher, Thursday lower: the opposite of the analysis plan)",
+     "usual": "16 usual worlds only (stage B not played): diff +145, se 129, t +1.1, n 16, up 11/16, worst -1057, mean on-time 97.5, lowest on-time 92.9 (m11; base lowest 93.4 on m7), 1 world under 93, ranked 16/16",
+     "fresh": "not played",
+     "verdict": "Not confirmed: the only variant clearly above zero, but on 16 worlds at t +1.1 and with the on-time floor 0.5 point under the base's; it needs the other 24 usual worlds and the fresh worlds before any follow-up decision."
+    },
+    {
+     "tag": "w3-ln-m97",
+     "changes": "startModel.lnOLane -0.855, costStartMean 0.97",
+     "usual": "16 usual worlds only (stage B not played): diff +41, se 172, t +0.2, n 16, up 9/16, worst -1929, mean on-time 97.3, lowest on-time 94.2 (base 93.4), ranked 16/16",
+     "fresh": "not played",
+     "verdict": "No signal: within noise on 16 worlds; not worth a follow-up on this evidence."
+    },
+    {
+     "tag": "w3-mt-ln-m97",
+     "changes": "startFallbackDay.0 1.12, startFallbackDay.3 1.28, startModel.lnOLane -0.855, costStartMean 0.97",
+     "usual": "16 usual worlds only (stage B not played): diff +22, se 146, t +0.1, n 16, up 8/16, worst -1742, mean on-time 97.0, lowest on-time 93.5 (base 93.4), ranked 16/16",
+     "fresh": "not played",
+     "verdict": "No signal: within noise on 16 worlds, and mean on-time is 0.3 point under the base's."
+    }
+   ],
+   "notes": "OUTCOME: only stage A ran, and only partly. 6 of the 18 variants finished all 16 usual worlds, 2 were cut partway (w3-narrow n=10, w3-bandup n=8), 10 were never played. Stages B and C were not played. Nothing reached 40 usual worlds or the fresh worlds, so nothing meets the follow-up bar.\n\nWHAT WENT WRONG: the slot played about 5 worlds a minute, not 45. The server's own done line: \"done w3a: 16 seeds on 4 keys in 1533 s, ended 11:21:02 UTC\" (started about 10:55:30 UTC). Results arrived in batches of 2 variants x 16 worlds roughly every 5 to 6.5 minutes (sweep.ts plays variant by variant, 8 weeks at a time per key). Because w3a held the slot lock until the 11:21 stop and killing was not allowed, no second sweep could start before the 11:14 cutoff. Sizing stage A at 18 variants on the stated rate was the planning error on my side; at the real rate about 6 variants fit.\n\nNEVER PLAYED (defined in w3a.json, no results): w3-banddn (startMin 0.55, startMax 0.91), w3-fb125-m97 (startFallback 1.25, costStartMean 0.97), w3-fb115-m93 (startFallback 1.15, costStartMean 0.93), w3-fb125-cs08 (startFallback 1.25, costStart 0.8), w3-fb115-cs12 (startFallback 1.15, costStart 1.2), w3-daysup (startFallbackDay [1.26,1.26,1.26,1.26,1.10], startMax 1.0), w3-daysdn (startFallbackDay [1.14,1.14,1.14,1.14,1.0], startMin 0.55), w3-sdpr-dn (costSameDay 0.05, costPrivate 0.10), w3-sd2pr (costSameDay 0.05, costPrivate 0.20), w3-pr2sd (costSameDay 0.15, costPrivate 0.10). So the startFallback-with-costStart pairs and the whole costSameDay/costPrivate/costNote group are untested. costNote was in no variant.\n\nWHAT THE RUNS SHOWED (all on 16 usual worlds, se 129 to 228, so every statement here is inside noise):\n- Monday/Thursday day fallbacks: the analysis direction (Mon 1.12, Thu 1.28) was -193 (t -0.8); the reverse (Mon 1.28, Thu 1.12) was +145 (t +1.1, 11/16 up). The sign flips with the direction, which is the one consistent pattern, but the reverse also had the lowest on-time of the set: 92.9 on m11, one world under 93, against the base's 93.4.\n- startModel.lnOLane -0.855 on top of the Mon/Thu move: -193 became -89. Adding costStartMean 0.97 as well: +22. lnOLane with costStartMean 0.97 and no day move: +41. The costStartMean 0.97 variants won more orders (won 431.7 and 434.9 against the base's 423.7), consistent with a lower quote level; w3-mt-ln-m97 had mean on-time 97.0 against 97.3.\n- Band: wider (0.55..1.0) -115 (t -0.6). Narrower (0.65..0.91) -257 on 10 worlds and shifted up (0.65..1.0) -69 on 8 worlds are partial and not comparable with the 16-world rows: the worlds that finished exclude m7 and m11, the two lowest on-time worlds, so their on-time floors (96.7, 96.5) say nothing.\n\nFROM READING bot/desk.ts startPlan (lines 1286-1307), not from a test: the expected fee that feeds the quote cost is chance x start + (1 - chance) x startFallback, using the plain startFallback, not the day's value. Two consequences: (1) since cand5 sets startFallbackDay for all five weekdays, the plain startFallback acts mainly as a quote-cost knob, raising cost by about (1 - chance) x the change; (2) a day fallback equal to startFallback makes the opening fee the minimiser of that expected fee, so small day-fallback moves change the price level only at second order and need no costStartMean pairing, while lnOLane and startFallback move it at first order.\n\nFILES: C:\\Users\\trevo\\spread\\data\\scan\\w3a.json (changes, all 18 variants), C:\\Users\\trevo\\spread\\bot\\sweeps\\w3a.json (built sweep). No other files created; no existing file edited. On the server only date and cmp.py were run. All numbers are as printed by cmp.py --low --only=s,m tn1-base w3- at 11:21:16 UTC, after the sweep had ended."
+  },
+  {
+   "slot": 4,
+   "tested": [
+    {
+     "tag": "w4-aw180-g",
+     "changes": "minAwake 180, lateTarget 0.025, ctrlPow 4",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -588,
+     "se": 290,
+     "t": -2,
+     "ontime": 97.1,
+     "low": 92.4
+    },
+    {
+     "tag": "w4-aw200-g",
+     "changes": "minAwake 200, lateTarget 0.025, ctrlPow 4",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -501,
+     "se": 232,
+     "t": -2.2,
+     "ontime": 97.2,
+     "low": 92.4
+    },
+    {
+     "tag": "w4-aw200-g-buf20-sl120",
+     "changes": "minAwake 200, lateTarget 0.025, ctrlPow 4, deliveryBuffer 20, minSlack 120",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -458,
+     "se": 261,
+     "t": -1.8,
+     "ontime": 97.3,
+     "low": 93.8
+    },
+    {
+     "tag": "w4-aw180-sh7",
+     "changes": "minAwake 180, lateShadow 7000",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -346,
+     "se": 240,
+     "t": -1.4,
+     "ontime": 97.2,
+     "low": 94.8
+    },
+    {
+     "tag": "w4-aw300-sh5-ll3",
+     "changes": "minAwake 300, lateShadow 5000, lateLoss 0.3",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -122,
+     "se": 209,
+     "t": -0.6,
+     "ontime": 97.2,
+     "low": 92.5
+    },
+    {
+     "tag": "w4-buf10-sl90",
+     "changes": "deliveryBuffer 10, minSlack 90",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -147,
+     "se": 158,
+     "t": -0.9,
+     "ontime": 97.3,
+     "low": 94.6
+    },
+    {
+     "tag": "w4-buf20-sl120-ds240",
+     "changes": "deliveryBuffer 20, minSlack 120, dropSafe 240",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -23,
+     "se": 154,
+     "t": -0.2,
+     "ontime": 97.6,
+     "low": 95
+    },
+    {
+     "tag": "w4-buf40-sl180",
+     "changes": "deliveryBuffer 40, minSlack 180",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -192,
+     "se": 310,
+     "t": -0.6,
+     "ontime": 97.2,
+     "low": 94.1
+    },
+    {
+     "tag": "w4-ds180-db100",
+     "changes": "dropSafe 180, dropBump 1.0",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -125,
+     "se": 179,
+     "t": -0.7,
+     "ontime": 97,
+     "low": 92.9
+    },
+    {
+     "tag": "w4-ds240-db115",
+     "changes": "dropSafe 240, dropBump 1.15",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -271,
+     "se": 190,
+     "t": -1.4,
+     "ontime": 97.3,
+     "low": 93.6
+    },
+    {
+     "tag": "w4-sh5-ll3",
+     "changes": "lateShadow 5000, lateLoss 0.3",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 39,
+     "se": 221,
+     "t": 0.2,
+     "ontime": 97,
+     "low": 92.6
+    },
+    {
+     "tag": "w4-sh7-ll3",
+     "changes": "lateShadow 7000, lateLoss 0.3",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -234,
+     "se": 199,
+     "t": -1.2,
+     "ontime": 97.3,
+     "low": 93.7
+    },
+    {
+     "tag": "w4-sh7-ll5",
+     "changes": "lateShadow 7000, lateLoss 0.5",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -303,
+     "se": 108,
+     "t": -2.8,
+     "ontime": 97.6,
+     "low": 94.7
+    },
+    {
+     "tag": "w4-aw300-l",
+     "changes": "minAwake 300, lateTarget 0.035, ctrlPow 2",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -136,
+     "se": 110,
+     "t": -1.2,
+     "ontime": 97.5,
+     "low": 94.1
+    },
+    {
+     "tag": "w4-buf20-sl120",
+     "changes": "deliveryBuffer 20, minSlack 120",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 28,
+     "se": 104,
+     "t": 0.3,
+     "ontime": 97.6,
+     "low": 94.2
+    },
+    {
+     "tag": "w4-buf20-sl120-u",
+     "changes": "deliveryBuffer 20, minSlack 120 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": -63,
+     "se": 76,
+     "t": -0.8,
+     "ontime": 97.2,
+     "low": 92.5
+    },
+    {
+     "tag": "w4-buf20-sl90",
+     "changes": "deliveryBuffer 20, minSlack 90",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 103,
+     "se": 91,
+     "t": 1.1,
+     "ontime": 97.6,
+     "low": 94.2
+    },
+    {
+     "tag": "w4-buf20-sl120-ll3",
+     "changes": "deliveryBuffer 20, minSlack 120, lateLoss 0.3",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 53,
+     "se": 90,
+     "t": 0.6,
+     "ontime": 97.4,
+     "low": 93.2
+    },
+    {
+     "tag": "w4-buf20-sl120-lt35-p4",
+     "changes": "deliveryBuffer 20, minSlack 120, lateTarget 0.035, ctrlPow 4",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 28,
+     "se": 103,
+     "t": 0.3,
+     "ontime": 97.6,
+     "low": 94.6
+    },
+    {
+     "tag": "w4-buf20-sl120-sh7",
+     "changes": "deliveryBuffer 20, minSlack 120, lateShadow 7000",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -8,
+     "se": 91,
+     "t": -0.1,
+     "ontime": 97.7,
+     "low": 93.2
+    },
+    {
+     "tag": "w4-buf20-sl120-sh5-ll3",
+     "changes": "deliveryBuffer 20, minSlack 120, lateShadow 5000, lateLoss 0.3",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -58,
+     "se": 156,
+     "t": -0.4,
+     "ontime": 97.2,
+     "low": 93.6
+    },
+    {
+     "tag": "w4-buf20-sl120-sh5-lt25",
+     "changes": "deliveryBuffer 20, minSlack 120, lateShadow 5000, lateTarget 0.025",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -201,
+     "se": 136,
+     "t": -1.5,
+     "ontime": 97.4,
+     "low": 94.4
+    },
+    {
+     "tag": "w4-ds240-db105",
+     "changes": "dropSafe 240, dropBump 1.05",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -31,
+     "se": 90,
+     "t": -0.3,
+     "ontime": 97.4,
+     "low": 93.3
+    },
+    {
+     "tag": "w4-lt35-p4",
+     "changes": "lateTarget 0.035, ctrlPow 4",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -5,
+     "se": 91,
+     "t": -0.1,
+     "ontime": 97.5,
+     "low": 92.3
+    },
+    {
+     "tag": "w4-lt25-p2",
+     "changes": "lateTarget 0.025, ctrlPow 2",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -122,
+     "se": 95,
+     "t": -1.3,
+     "ontime": 97.5,
+     "low": 93.6
+    },
+    {
+     "tag": "w4-sh5-lt25",
+     "changes": "lateShadow 5000, lateTarget 0.025",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -216,
+     "se": 106,
+     "t": -2,
+     "ontime": 97.4,
+     "low": 93.3
+    },
+    {
+     "tag": "w4-sh5-ll3-lt25-p4",
+     "changes": "lateShadow 5000, lateLoss 0.3, lateTarget 0.025, ctrlPow 4",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -434,
+     "se": 154,
+     "t": -2.8,
+     "ontime": 97.2,
+     "low": 94
+    },
+    {
+     "tag": "w4-sh8-lt35",
+     "changes": "lateShadow 8000, lateTarget 0.035",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": -114,
+     "se": 100,
+     "t": -1.1,
+     "ontime": 97.6,
+     "low": 94.2
+    },
+    {
+     "tag": "w4-buf20-sl120-sh7-ds240-db105",
+     "changes": "deliveryBuffer 20, minSlack 120, lateShadow 7000, dropSafe 240, dropBump 1.05",
+     "worlds": "24 usual (t1-t24 only; base floor on these 24 is 94.9)",
+     "n": 24,
+     "diff": -306,
+     "se": 176,
+     "t": -1.7,
+     "ontime": 97.4,
+     "low": 95.2
+    },
+    {
+     "tag": "w4-buf20-sl120-sh8-lt35",
+     "changes": "deliveryBuffer 20, minSlack 120, lateShadow 8000, lateTarget 0.035",
+     "worlds": "24 usual (t1-t24 only; base floor on these 24 is 94.9)",
+     "n": 24,
+     "diff": -219,
+     "se": 107,
+     "t": -2.1,
+     "ontime": 97.6,
+     "low": 95
+    },
+    {
+     "tag": "w4-sh8-lt35-ds240-db105",
+     "changes": "lateShadow 8000, lateTarget 0.035, dropSafe 240, dropBump 1.05",
+     "worlds": "24 usual (t1-t24 only; base floor on these 24 is 94.9)",
+     "n": 24,
+     "diff": -144,
+     "se": 142,
+     "t": -1,
+     "ontime": 97.8,
+     "low": 95.2
+    }
+   ],
+   "best": [
+    {
+     "tag": "w4-buf20-sl90",
+     "changes": "deliveryBuffer 20, minSlack 90",
+     "usual": "diff +103, se 91, t +1.1, n 40, lowest on-time 94.2 (base 93.4); up 22/40, worst -1106",
+     "fresh": "not played",
+     "verdict": "Only lead of the theme, but not a follow-up by the rule: t 1.1 is under 1.5 and there is no fresh run. Its sibling buf20-sl120 lost on the fresh worlds with a lower floor, so treat it as unproven; a fresh 80-world run is the next step if anyone has the time."
+    },
+    {
+     "tag": "w4-buf20-sl120",
+     "changes": "deliveryBuffer 20, minSlack 120",
+     "usual": "diff +28, se 104, t +0.3, n 40, lowest on-time 94.2 (base 93.4)",
+     "fresh": "diff -63, se 76, t -0.8, n 80, lowest on-time 92.5 (base 93.4), 1 world under 93 (h65:92.5)",
+     "verdict": "Not worth a follow-up: flat on usual, behind on fresh, and the fresh floor is 0.9 under the base's. The higher floor on the usual worlds did not carry over."
+    },
+    {
+     "tag": "w4-buf20-sl120-ll3",
+     "changes": "deliveryBuffer 20, minSlack 120, lateLoss 0.3",
+     "usual": "diff +53, se 90, t +0.6, n 40, lowest on-time 93.2 (base 93.4)",
+     "fresh": "not played",
+     "verdict": "Not worth a follow-up: within noise, floor slightly lower."
+    },
+    {
+     "tag": "w4-buf20-sl120-lt35-p4",
+     "changes": "deliveryBuffer 20, minSlack 120, lateTarget 0.035, ctrlPow 4",
+     "usual": "diff +28, se 103, t +0.3, n 40, lowest on-time 94.6 (base 93.4)",
+     "fresh": "not played",
+     "verdict": "Not worth a follow-up on margin; highest 40-world floor of the non-negative variants (94.6), but the same buffer/slack move alone lost its floor gain on fresh worlds."
+    }
+   ],
+   "notes": "RESULT: nothing in this theme meets the follow-up rule. 31 variants played in four sweeps (w4a 18x16 usual, w4b 8x24 t-worlds, w4c 1x80 fresh, w4d 9x40 usual); all four sweeps finished, the last at 11:14:48 UTC. All numbers are as cmp.py printed them (tn1-base for usual, tn1-base-u for fresh).\n\nWHAT THE RUNS SHOWED\n- minAwake down (180/200) with a stricter guard (lateTarget 0.025, ctrlPow 4) is clearly bad: -588 and -501 on 16 worlds (t -2.0, -2.2), floor 92.4. Orders won rise from 423.7 to about 442, so the extra tight orders lose money; the stricter guard does not rescue it. Adding buf20/sl120 on top (-458) or using lateShadow 7000 as the guard (-346) does not help either.\n- minAwake 300 with a looser guard (lateTarget 0.035, ctrlPow 2): +56 on 16, then -264 on the 24 t worlds; -136 (t -1.2) over 40. minAwake 240 looks like the optimum in both directions.\n- Lowering the cost of lateness (lateShadow 5000, alone or with lateLoss 0.3 or lateTarget 0.025) wins more orders (432 to 445 against 428.8) and loses margin: sh5-lt25 -216 (t -2.0), sh5-ll3-lt25-p4 -434 (t -2.8), buf20-sl120-sh5-lt25 -201 (t -1.5). Raising it also loses: sh7-ll5 -303 (t -2.8 on 16), sh7-ll3 -234, sh8-lt35 -114 over 40. The lateShadow/lateLoss/lateTarget block is at a local optimum; no joint direction helped.\n- lateTarget and ctrlPow moved in opposite senses: lt35-p4 is flat on margin (-5) but drops the floor to 92.3 (m11); lt25-p2 is -122 (t -1.3). No gain from trading the two.\n- Drops: dropSafe 240 with dropBump 1.05 was +96 on 16 and -31 over 40; with dropBump 1.15 -271 on 16; dropSafe 180 with dropBump 1.0 -125 on 16, floor 92.9. The suggested dropSafe 240 gives nothing measurable, and adding it to other moves (buf20-sl120-ds240 -23, the two -ds240-db105 combinations -306 and -144 on t worlds) did not help.\n- deliveryBuffer with minSlack is the only region with non-negative results: buf20-sl120 +28, buf20-sl90 +103 (t +1.1), both with floor 94.2 on the 40 usual. But the step further (buf10-sl90) was -147 on 16, the opposite direction (buf40-sl180) -192 on 16, and buf20-sl120 on the 80 fresh worlds was -63 (t -0.8) with floor 92.5 against 93.4. So the usual-world floor gain (it comes from m7 and m11) does not generalise.\n- Stacking positives did not add up: every combination of two stage-A winners was worse than its parts (buf20-sl120-sh7 +167 on 16 became -8 over 40; buf20-sl120-sh8-lt35 -219, buf20-sl120-sh7-ds240-db105 -306 on the t worlds).\n- 16-world screening was unreliable here: all five stage-A leaders (+56 to +167 on 16) were negative on the 24 t worlds (-3 to -264). saveShare was not tested (zero effect as a single).\n\nDEVIATIONS FROM THE PLAN\n- w4b carried three new combined tags besides the five stage-A leaders; those three were played on t1-t24 only (never on the s/m worlds), so their n is 24.\n- No variant reached t of 1 over 40 after stage B. Stage C was still played for w4-buf20-sl120 alone, because it showed a higher floor at equal margin (the theme's second goal); it failed on fresh.\n- The second round (w4d) skipped the 16-world screen and played 9 new variants directly on all 40 usual worlds.\n\nCUT BY THE DEADLINE\n- w4-buf20-sl90, the best variant over 40, came out of the last sweep (ended 11:14:48, after the 11:14:00 start limit), so it has no fresh run.\n- The 13 variants dropped after stage A have 16 worlds only.\n\nFILES: C:\\Users\\trevo\\spread\\data\\scan\\w4a.json, w4b.json, w4c.json, w4d.json (changes) and C:\\Users\\trevo\\spread\\bot\\sweeps\\w4a.json, w4b.json, w4c.json, w4d.json (sweep files). Nothing else was created or edited; nothing went wrong with the server link."
+  },
+  {
+   "slot": 5,
+   "tested": [
+    {
+     "tag": "w5-top2",
+     "changes": "lateStart 1.05, lambdaPerOpen 27",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 184,
+     "se": 91,
+     "t": 2,
+     "ontime": 97.5,
+     "low": 93.3
+    },
+    {
+     "tag": "w5-top3",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 164,
+     "se": 82,
+     "t": 2,
+     "ontime": 97.5,
+     "low": 93.6
+    },
+    {
+     "tag": "w5-top5",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.263",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -8,
+     "se": 154,
+     "t": -0.1,
+     "ontime": 97.4,
+     "low": 93.7
+    },
+    {
+     "tag": "w5-top7",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.263, lateStep 0.07, urgentStart 1.4",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 35,
+     "se": 160,
+     "t": 0.2,
+     "ontime": 97.2,
+     "low": 92.9
+    },
+    {
+     "tag": "w5-top3x",
+     "changes": "larger moves: lateStart 0.95, lambdaPerOpen 21, minSlack 90",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 66,
+     "se": 166,
+     "t": 0.4,
+     "ontime": 97.2,
+     "low": 94.4
+    },
+    {
+     "tag": "w5-top5wu",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.183",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 143,
+     "se": 251,
+     "t": 0.6,
+     "ontime": 97.3,
+     "low": 94.4
+    },
+    {
+     "tag": "w5-om-pp",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 175,
+     "se": 121,
+     "t": 1.4,
+     "ontime": 97.3,
+     "low": 94
+    },
+    {
+     "tag": "w5-om-pp110",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true, privateFee 1.1",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -159,
+     "se": 169,
+     "t": -0.9,
+     "ontime": 96.9,
+     "low": 93
+    },
+    {
+     "tag": "w5-om-top2",
+     "changes": "offerModel (o2-m004), lateStart 1.05, lambdaPerOpen 27",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 28,
+     "se": 139,
+     "t": 0.2,
+     "ontime": 97.4,
+     "low": 94.1
+    },
+    {
+     "tag": "w5-om3-top2",
+     "changes": "offerModel (o2-m004), offerMin 0.003, lateStart 1.05, lambdaPerOpen 27",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 70,
+     "se": 164,
+     "t": 0.4,
+     "ontime": 97.3,
+     "low": 94.8
+    },
+    {
+     "tag": "w5-pp-aw",
+     "changes": "quotePrivatePickup true, minAwake 360",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 13,
+     "se": 147,
+     "t": 0.1,
+     "ontime": 97.5,
+     "low": 93.2
+    },
+    {
+     "tag": "w5-pp110-aw",
+     "changes": "quotePrivatePickup true, privateFee 1.1, minAwake 360",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -240,
+     "se": 194,
+     "t": -1.2,
+     "ontime": 97.4,
+     "low": 93.8
+    },
+    {
+     "tag": "w5-tr-om",
+     "changes": "quoteTradeIns true, tradeSlot 0, tradeLate 0.2, costTrade 0.5, privateFee 1.25, offerModel (o2-m004)",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 75,
+     "se": 152,
+     "t": 0.5,
+     "ontime": 96.9,
+     "low": 94.5
+    },
+    {
+     "tag": "w5-tr-pp",
+     "changes": "quoteTradeIns true, tradeSlot 0, tradeLate 0.2, costTrade 0.5, privateFee 1.25, quotePrivatePickup true",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 112,
+     "se": 120,
+     "t": 0.9,
+     "ontime": 97.1,
+     "low": 92.8
+    },
+    {
+     "tag": "w5-pp-top3",
+     "changes": "quotePrivatePickup true, lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 133,
+     "se": 253,
+     "t": 0.5,
+     "ontime": 97.1,
+     "low": 93.3
+    },
+    {
+     "tag": "w5-pp110-top2",
+     "changes": "quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": 21,
+     "se": 262,
+     "t": 0.1,
+     "ontime": 97,
+     "low": 93.5
+    },
+    {
+     "tag": "w5-pp110-top3",
+     "changes": "quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "worlds": "16 usual",
+     "n": 16,
+     "diff": -41,
+     "se": 330,
+     "t": -0.1,
+     "ontime": 96.9,
+     "low": 94
+    },
+    {
+     "tag": "w5-pp110-top5",
+     "changes": "quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.263",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 242,
+     "se": 125,
+     "t": 1.9,
+     "ontime": 97.3,
+     "low": 93.4
+    },
+    {
+     "tag": "w5-om-pp110-top2",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 205,
+     "se": 121,
+     "t": 1.7,
+     "ontime": 97.3,
+     "low": 94.7
+    },
+    {
+     "tag": "w5-pp110-aw-top3",
+     "changes": "quotePrivatePickup true, privateFee 1.1, minAwake 300, lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "worlds": "40 usual",
+     "n": 40,
+     "diff": 218,
+     "se": 102,
+     "t": 2.1,
+     "ontime": 97.5,
+     "low": 94.1
+    },
+    {
+     "tag": "w5-top2-u",
+     "changes": "lateStart 1.05, lambdaPerOpen 27 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 94,
+     "se": 74,
+     "t": 1.3,
+     "ontime": 97.2,
+     "low": 92.8
+    },
+    {
+     "tag": "w5-top3-u",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 144,
+     "se": 70,
+     "t": 2.1,
+     "ontime": 97.2,
+     "low": 92.8
+    },
+    {
+     "tag": "w5-om-pp-u",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 231,
+     "se": 111,
+     "t": 2.1,
+     "ontime": 97.1,
+     "low": 92.7
+    },
+    {
+     "tag": "w5-om-pp110-top2-u",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 330,
+     "se": 87,
+     "t": 3.8,
+     "ontime": 97.1,
+     "low": 92.7
+    },
+    {
+     "tag": "w5-pp110-aw-top3-u",
+     "changes": "quotePrivatePickup true, privateFee 1.1, minAwake 300, lateStart 1.05, lambdaPerOpen 27, minSlack 120 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 317,
+     "se": 91,
+     "t": 3.5,
+     "ontime": 97.3,
+     "low": 90.7
+    },
+    {
+     "tag": "w5-pp110-top5-u",
+     "changes": "quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.263 (fresh worlds, lanes-usual.json)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 313,
+     "se": 111,
+     "t": 2.8,
+     "ontime": 97.1,
+     "low": 91.8
+    },
+    {
+     "tag": "w5-om-pp110-aw-top3-u",
+     "changes": "offerModel (o2-m004), quotePrivatePickup true, privateFee 1.1, minAwake 300, lateStart 1.05, lambdaPerOpen 27, minSlack 120 (fresh worlds only, lanes-usual.json; never played on usual worlds)",
+     "worlds": "80 fresh",
+     "n": 80,
+     "diff": 347,
+     "se": 102,
+     "t": 3.4,
+     "ontime": 97.2,
+     "low": 92.4
+    }
+   ],
+   "best": [
+    {
+     "tag": "w5-om-pp110-top2",
+     "changes": "offerModel (o2-m004 object, offerMin 0.004), quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27",
+     "usual": "diff +205, se 121, t +1.7, n 40, lowest on-time 94.7 (base 93.4); up 24/40",
+     "fresh": "diff +330, se 87, t +3.8, n 80, lowest on-time 92.7 on h24 (base-u lowest 93.4 on h65; base-u h24 93.9); up 58/80",
+     "verdict": "Meets the margin test on both world sets (best t on fresh, best floor on usual), but the fresh floor is 0.7 under the base's, so it misses the half-point floor rule by 0.2; strongest candidate of this slot, follow-up should look at h24."
+    },
+    {
+     "tag": "w5-top3",
+     "changes": "lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "usual": "diff +164, se 82, t +2.0, n 40, lowest on-time 93.6 (base 93.4); up 23/40",
+     "fresh": "diff +144, se 70, t +2.1, n 80, lowest on-time 92.8 on h24 (base-u 93.4); up 44/80",
+     "verdict": "Ahead on both sets with t about 2 and no structural switch; fresh floor 0.6 under the base's, so it misses the half-point floor rule by 0.1; the low-risk candidate."
+    },
+    {
+     "tag": "w5-top2",
+     "changes": "lateStart 1.05, lambdaPerOpen 27",
+     "usual": "diff +184, se 91, t +2.0, n 40, lowest on-time 93.3 (base 93.4); up 26/40",
+     "fresh": "diff +94, se 74, t +1.3, n 80, lowest on-time 92.8 on h24 (base-u 93.4); up 39/80",
+     "verdict": "Ahead on both sets but weaker on fresh than top3 (t 1.3) and fresh floor 0.6 under the base's; top3 is the better form of the same move."
+    },
+    {
+     "tag": "w5-pp110-aw-top3",
+     "changes": "quotePrivatePickup true, privateFee 1.1, minAwake 300, lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "usual": "diff +218, se 102, t +2.1, n 40, lowest on-time 94.1 (base 93.4); up 30/40",
+     "fresh": "diff +317, se 91, t +3.5, n 80, lowest on-time 90.7 on h24 (base-u 93.4); up 55/80",
+     "verdict": "Margin ahead on both sets, but one fresh world at 90.7% on time, 2.7 points under the base's floor and 0.7 above the unranked line: fails the floor rule, not safe as it is."
+    },
+    {
+     "tag": "w5-pp110-top5",
+     "changes": "quotePrivatePickup true, privateFee 1.1, lateStart 1.05, lambdaPerOpen 27, minSlack 120, deliveryBuffer 20, market.war -0.263",
+     "usual": "diff +242, se 125, t +1.9, n 40, lowest on-time 93.4 (base 93.4); up 25/40",
+     "fresh": "diff +313, se 111, t +2.8, n 80, lowest on-time 91.8 on h65 (base-u 93.4); up 48/80",
+     "verdict": "Margin ahead on both sets, but fresh floor 1.6 points under the base's: fails the floor rule."
+    },
+    {
+     "tag": "w5-om-pp",
+     "changes": "offerModel (o2-m004 object, offerMin 0.004), quotePrivatePickup true (privateFee 1)",
+     "usual": "diff +175, se 121, t +1.4, n 40, lowest on-time 94.0 (base 93.4); up 22/40",
+     "fresh": "diff +231, se 111, t +2.1, n 80, lowest on-time 92.7 on h24 (base-u 93.4); up 48/80",
+     "verdict": "Ahead on both sets but t on usual is 1.4 (just under 1.5) and fresh floor 0.7 under the base's; the same switches plus top2 and privateFee 1.1 (w5-om-pp110-top2) did better."
+    },
+    {
+     "tag": "w5-om-pp110-aw-top3",
+     "changes": "offerModel (o2-m004 object), quotePrivatePickup true, privateFee 1.1, minAwake 300, lateStart 1.05, lambdaPerOpen 27, minSlack 120",
+     "usual": "not played",
+     "fresh": "diff +347, se 102, t +3.4, n 80, lowest on-time 92.4 on h24 (base-u 93.4); up 53/80",
+     "verdict": "Fresh worlds only (added in the last sweep as the union of the two leaders); largest fresh diff, but fresh floor 1.0 under the base's and no usual-world numbers, so it cannot be judged by the rule."
+    }
+   ],
+   "notes": "Sweeps played, all finished with a \"done\" line, nothing stopped by the deadline: w5a (20 variants x 16 usual worlds, ended 11:01:59 UTC), w5b (7 variants x 24 t-worlds, ended 11:06:12), w5c (3 variants x 80 fresh, ended 11:11:11), w5d (4 variants x 80 fresh, ended 11:16:44). Changes files: C:\\Users\\trevo\\spread\\data\\scan\\w5a.json, w5b.json, w5c.json, w5d.json; sweep files C:\\Users\\trevo\\spread\\bot\\sweeps\\w5a.json to w5d.json. Numbers are as cmp.py printed them (usual against tn1-base, fresh against tn1-base-u).\n\nFLOOR. By the stated rule (lowest on-time not under the base's by more than half a point) no variant passes on the fresh worlds: base-u lowest is 93.4 (h65; h24 is 93.9), and every variant played on fresh has its lowest world between 90.7 and 92.8, on h24 in six of seven cases (h65 for pp110-top5). Even top2/top3 without any switch drop h24 to 92.8, so part of the h24 drop comes from lateStart 1.05 + lambdaPerOpen 27 themselves, not only from private pickups. On the 40 usual worlds the floors were at or above the base's (93.3 to 94.7 against 93.4), except tr-pp 92.8. All variants were ranked in all worlds (lowest seen 90.7).\n\nINTERACTIONS.\n- lateStart 1.05 + lambdaPerOpen 27 add up roughly as the singles suggested (+96 and +109 alone; +184 together on 40 usual, t 2.0), but only +94 (t 1.3) on fresh. With minSlack 120 added: +164 usual, +144 fresh (t 2.1 both).\n- The weaker singles do not stack on 16 worlds: top5 (adds deliveryBuffer 20, market.war -0.263) -8, top7 (adds lateStep 0.07, urgentStart 1.4) +35 with floor 92.9, top5 with war up instead +143 (se 251). Larger steps (0.95 / 21 / 90) +66 against +213 for top3 on the same 16 worlds: no sign that bigger moves help. All within noise at n 16.\n- Private pickups give the larger fresh gain: all five fresh variants with quotePrivatePickup are +231 to +347 (t 2.1 to 3.8), against +94 / +144 for top2 / top3. They also cost floor on fresh (90.7 to 92.7).\n- Offer model: alone it was negative elsewhere (p1-om -123, t -1.1, 40 worlds), and with top2 only it is flat (om-top2 +28, om3-top2 with offerMin 0.003 +70, n 16), but together with private pickups it is positive (om-pp +175 t 1.4 usual, +231 t 2.1 fresh) and om-pp110-top2 has the best usual floor (94.7) and the best fresh t (3.8). offerMin 0.003 against 0.004 shows no visible difference at n 16.\n- minAwake as a safety for private pickups did not work: minAwake 360 removes the gain (pp-aw +13, pp110-aw -240 on 16 worlds; orders won 415.6 / 418.0 against 423.7 for the base), and minAwake 300 in pp110-aw-top3 gave the worst fresh floor of all (90.7 on h24). Adding the offer model to that set (om-pp110-aw-top3, fresh only) had 92.4 on h24.\n- Trade-ins: tr-pp +112 (t 0.9, 40 usual, floor 92.8 on m11, one world under 93); tr-om +75 on 16 worlds. No sign of an interaction worth more runs.\n- Noise warning: on 16 worlds variants with private pickups have se 170 to 330 and are not separable from each other (pp110-top2 +21, pp110-top3 -41, but pp110-top5 +383, om-pp110-top2 +427); om-pp110-top2 fell from +427 (t 2.5) on 16 worlds to +205 (t 1.7) on 40. The single om-pp110 (-159) and pp110-aw (-240) results at n 16 contradict p1-priv-f110 (+210 on 40) and should not be read as evidence against privateFee 1.1.\n\nCUT BY THE DEADLINE. 13 of the 20 stage A variants have only 16 usual worlds. w5-tr-pp was not played on fresh worlds. w5-om-pp110-aw-top3 was played on fresh worlds only (no usual-world numbers). No second stage A with new joint moves was run; the remaining time went to fresh-world runs of all six variants that were ahead with t of 1.4 or more on 40 usual worlds. Single switches were not run in this slot (p1-* read only: p1-priv +106 t 0.9, p1-priv-f110 +210 t 1.5 floor 92.7, p1-om -123 t -1.1, p1-om-min3 -73 on 31 worlds; trade-in p1 tags had no results when read at about 10:55 UTC).\n\nNothing went wrong: no ssh failures, no file outside bot/sweeps/w5*.json and data/scan/w5* was created or changed, only slot 5 was used."
+  }
+ ]
+}

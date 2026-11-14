@@ -1,0 +1,20 @@
+{
+ "w3-mt": {"startFallbackDay.0": 1.12, "startFallbackDay.3": 1.28},
+ "w3-mt-ln": {"startFallbackDay.0": 1.12, "startFallbackDay.3": 1.28, "startModel.lnOLane": -0.855},
+ "w3-ln-m97": {"startModel.lnOLane": -0.855, "costStartMean": 0.97},
+ "w3-mt-ln-m97": {"startFallbackDay.0": 1.12, "startFallbackDay.3": 1.28, "startModel.lnOLane": -0.855, "costStartMean": 0.97},
+ "w3-mt-rev": {"startFallbackDay.0": 1.28, "startFallbackDay.3": 1.12},
+ "w3-wide": {"startMin": 0.55, "startMax": 1.0},
+ "w3-narrow": {"startMin": 0.65, "startMax": 0.91},
+ "w3-bandup": {"startMin": 0.65, "startMax": 1.0},
+ "w3-banddn": {"startMin": 0.55, "startMax": 0.91},
+ "w3-fb125-m97": {"startFallback": 1.25, "costStartMean": 0.97},
+ "w3-fb115-m93": {"startFallback": 1.15, "costStartMean": 0.93},
+ "w3-fb125-cs08": {"startFallback": 1.25, "costStart": 0.8},
+ "w3-fb115-cs12": {"startFallback": 1.15, "costStart": 1.2},
+ "w3-daysup": {"startFallbackDay.0": 1.26, "startFallbackDay.1": 1.26, "startFallbackDay.2": 1.26, "startFallbackDay.3": 1.26, "startFallbackDay.4": 1.1, "startMax": 1.0},
+ "w3-daysdn": {"startFallbackDay.0": 1.14, "startFallbackDay.1": 1.14, "startFallbackDay.2": 1.14, "startFallbackDay.3": 1.14, "startFallbackDay.4": 1.0, "startMin": 0.55},
+ "w3-sdpr-dn": {"costSameDay": 0.05, "costPrivate": 0.1},
+ "w3-sd2pr": {"costSameDay": 0.05, "costPrivate": 0.2},
+ "w3-pr2sd": {"costSameDay": 0.15, "costPrivate": 0.1}
+}

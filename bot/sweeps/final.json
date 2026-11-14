@@ -47,10 +47,10 @@
   "placeSd": 0.04,
   "dealerDaySd": 0.02
  },
- "lambdaPerOpen": 35,
+ "lambdaPerOpen": 27,
  "deliveryBuffer": 30,
  "trustValue": 1.0,
- "lateStart": 1.15,
+ "lateStart": 1.05,
  "lateStep": 0.1,
  "lateEvery": 120,
  "lateMax": 3,
@@ -103,5 +103,27 @@
  "minAwake": 240,
  "feeCap": 1.4,
  "rampPow": 1.5,
- "feeSteps": 16
+ "feeSteps": 16,
+ "offerModel": {
+  "one": -5.992,
+  "deAt": 1.637,
+  "de30": 1.434,
+  "de80": 0.6,
+  "pu30": -0.284,
+  "here": -0.184,
+  "worked": 0.958,
+  "seen": 0.101,
+  "long": -1.181,
+  "fee": -1.442,
+  "today": -0.437,
+  "view30": 2.303,
+  "view120": 1.991,
+  "view600": 1.255,
+  "viewOld": -0.559,
+  "hour": -1.593,
+  "evening": -0.442,
+  "lnDone": 0.387
+ },
+ "quotePrivatePickup": true,
+ "privateFee": 1.1
 }
