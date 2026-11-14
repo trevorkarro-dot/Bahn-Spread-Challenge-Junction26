@@ -1,5 +1,6 @@
 /** Plays one practice week with the desk on the practice clock, and saves everything it saw. */
 import { mkdirSync, writeFileSync } from "node:fs"
+import { gzipSync } from "node:zlib"
 import { Client, SpreadError } from "./spread.ts"
 import type { Action, ActionResult, Advance, Advanced, DeskEvent, DeskEventKind, Reveal, Score, World } from "./spread.ts"
 import { DAY, DEFAULTS, Desk, HOUR } from "./desk.ts"
@@ -61,6 +62,9 @@ export async function playWeek(client: Client, seed: string, level: number, cfg:
   const crash = [...(options.crash ?? [])]
   try {
     const roster = await world.roster()
+    // playFrom 4320 (a test final's shape): a new practice world first runs to that minute with nobody at the desk.
+    const from = options.worldId === undefined && !options.board ? cfg.playFrom : 0
+    if (from > 0) await world.client.call("POST", `/v1/worlds/${world.id}/advance`, { to: from })
     const { endsAt, now } = await world.snapshot()
     let desk = new Desk(cfg, new Roster(roster), level, endsAt, seed)
     let events: DeskEvent[] = []
@@ -134,11 +138,14 @@ export async function playWeek(client: Client, seed: string, level: number, cfg:
       if (!recover) throw error
       return null
     })
-    const dir = options.dir ?? "../data/runs"
+    // SPREAD_GZ=1 (the tuner's many trial runs): the week is kept compressed, in a directory of its own, a tenth the size.
+    const gz = !!process.env.SPREAD_GZ && !options.dir
+    const dir = options.dir ?? (gz ? "../data/runs-gz" : "../data/runs")
     mkdirSync(dir, { recursive: true })
-    const file = `${dir}/${cfg.tag}-${seed}-L${level}.json`
+    const file = `${dir}/${cfg.tag}-${seed}-L${level}.json${gz ? ".gz" : ""}`
     const seconds = (Date.now() - started) / 1000
-    writeFileSync(file, JSON.stringify({ seed, level, cfg, score, stats, steps, seconds, rejoins, worldId: world.id, roster, events, reveal, journal }))
+    const text = JSON.stringify({ seed, level, cfg, score, stats, steps, seconds, rejoins, worldId: world.id, roster, events, reveal, journal })
+    writeFileSync(file, gz ? gzipSync(text, { level: 4 }) : text)
     return { seed, tag: cfg.tag, score, steps, seconds, stats, file, worldId: world.id, rejoins }
   } catch (error) {
     // A practice world left behind holds a slot. A ranking run counts whatever happens: it stays, to be played on.

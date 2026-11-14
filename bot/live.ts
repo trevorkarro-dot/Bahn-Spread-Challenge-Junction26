@@ -3,7 +3,7 @@
  * Every start rebuilds the books from the world's history and snapshot, so a restart costs only its seconds.
  *
  *   node live.ts --final [--cfg @sweeps/final.json] [--tag final]       waits for the next final or test final, plays it
- *   node live.ts --rehearse s1 [--speed 1] [--crash 1500,4000]          a practice world on the final's clock;
+ *   node live.ts --rehearse s1 [--speed 1] [--crash 1500,4000] [--from 4320]   a practice world on the final's clock;
  *                                                                        --crash throws the books away at those world minutes
  *   node live.ts --collect <worldId> [--tag name]                       saves an ended world: events, score, reveal */
 import { appendFileSync, mkdirSync, readFileSync, writeFileSync } from "node:fs"
@@ -469,6 +469,7 @@ async function main(): Promise<void> {
       level: { type: "string", default: "8" },
       speed: { type: "string", default: "1" },
       crash: { type: "string", default: "" },
+      from: { type: "string", default: "0" },
       cfg: { type: "string", default: "@sweeps/final.json" },
       tag: { type: "string" },
       dir: { type: "string", default: "../data/live" },
@@ -499,6 +500,8 @@ async function main(): Promise<void> {
   } else if (args.rehearse) {
     const level = Number(args.level)
     const world = await client.create(level as 8, { seed: args.rehearse })
+    // A test final starts on Thursday 00:00 (--from 4320): the days before pass with nobody at the desk.
+    if (Number(args.from) > 0) await world.client.call("POST", `/v1/worlds/${world.id}/advance`, { to: Number(args.from) })
     const { now, endsAt } = await world.snapshot()
     const clock = new RehearsalClock(world, now, endsAt, Number(args.speed))
     log(`Rehearsal world ${world.id}, seed ${args.rehearse}, level ${level}, speed ${args.speed}.`)

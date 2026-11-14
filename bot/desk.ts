@@ -223,6 +223,8 @@ export type Config = {
   // --- practice clock ---
   tick: number
   wakeOnWin: boolean
+  /** Practice only: the world first runs to this minute with nobody at the desk (4320: a test final's shape). */
+  playFrom: number
 }
 
 export const DEFAULTS: Config = {
@@ -330,6 +332,7 @@ export const DEFAULTS: Config = {
   offerAge: 0,
   tick: 10,
   wakeOnWin: false,
+  playFrom: 0,
 }
 
 type LegState = {
