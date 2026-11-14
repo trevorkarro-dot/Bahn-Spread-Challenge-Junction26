@@ -16,6 +16,7 @@ SETS = {
     'h2': [f'h{i}' for i in range(41, 81)],
 }
 out = sys.argv[1]
+LANES = json.load(open(os.environ['LANES'])) if os.environ.get('LANES') else None  # LANES=data/lanes.json: the fee over the lane's typical fee
 seeds = SETS.get(sys.argv[2]) or sys.argv[2].split(',')
 tags = sys.argv[3:]
 cache = out + '.rows.pkl'
@@ -37,7 +38,7 @@ else:
                     if not p or p.get('late') or p.get('urgent') or not p.get('schedule') or not x:
                         continue
                     first = r['bookings'][0] if r['bookings'] else None
-                    rows.append(dict(seed=s, tag=tag, fee=p['schedule'][0]['feeCents'] / r['ref'], x=x, day=p['t'] // 1440, hour=p['t'] % 1440 / 60,
+                    rows.append(dict(seed=s, tag=tag, fee=p['schedule'][0]['feeCents'] / (LANES.get(r['pu'] + '>' + r['de'], r['ref']) if LANES else r['ref']), feeRef=p['schedule'][0]['feeCents'] / r['ref'], x=x, day=p['t'] // 1440, hour=p['t'] % 1440 / 60,
                                      atOpen=first is not None and first[1] <= p['schedule'][0]['feeCents'] + 1, ontime=r['ontime'], feeMult=r['feeMult'], km=r['km']))
         print(tag, len(rows), flush=True)
     pickle.dump(rows, open(cache, 'wb'))
@@ -63,7 +64,7 @@ old = json.load(open('data/start.model.json')) if os.path.exists('data/start.mod
 if old:
     z = old['one'] + sum(old.get(('postFri' if n == 'postFri' else n), 0) * X[test][:, i] for i, n in enumerate(names))
     po = 1 / (1 + np.exp(-z))
-    print(f"   the model in use on the same: log loss {log_loss(y[test], np.clip(po, 1e-4, 1 - 1e-4)):.4f}  AUC {roc_auc_score(y[test], po):.4f}  mean said {po.mean():.3f} against {y[test].mean():.3f}")
+    print(f"   the model in use on the same (it reads the fee as given here): log loss {log_loss(y[test], np.clip(po, 1e-4, 1 - 1e-4)):.4f}  AUC {roc_auc_score(y[test], po):.4f}  mean said {po.mean():.3f} against {y[test].mean():.3f}")
 clf = LogisticRegression(C=10, max_iter=5000).fit(X, y)
 model = {'one': round(float(clf.intercept_[0]), 4), **{n: round(float(c), 4) for n, c in zip(names, clf.coef_[0])}}
 print('refit :', json.dumps(model))
@@ -72,8 +73,8 @@ if old:
 # The fee's effect alone, by day: booked at the opening fee, by the opening fee.
 for d in range(5):
     cells = []
-    for f in (0.8, 0.85, 0.87, 0.9, 0.95):
-        idx = (np.abs(X[:, 0] - f) < 0.011) & (np.array([r['day'] for r in rows]) == d)
+    for f in (0.7, 0.75, 0.8, 0.85, 0.9, 0.95, 1.0, 1.1):
+        idx = (np.abs(X[:, 0] - f) < 0.025) & (np.array([r['day'] for r in rows]) == d)
         if idx.sum() >= 200:
             cells.append(f"{f:.2f}: {y[idx].mean():.3f} ({int(idx.sum())})")
     print(f"   day {d}: " + '  '.join(cells))

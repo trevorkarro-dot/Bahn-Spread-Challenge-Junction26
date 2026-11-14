@@ -10,6 +10,21 @@ import { Roster, airKm, experienced, roadKm, roadMinutes } from "./geo.ts"
 
 /** What every world shares: each dealer's usual share of the week's requests (dealer ids are in order of size),
  * and the share of the week's requests that has arrived by each half hour. */
+/** Each lane's typical fee in cents without the noise of single requests ("pickup>delivery"): the median over many
+ * saved weeks (tools/lanebase.py). Drivers price the work by the lane; a request's own number is that times a noise. */
+const LANE_TABLES = new Map<string, Record<string, number>>()
+const lanesOf = (file: string): Record<string, number> => {
+  let table = LANE_TABLES.get(file)
+  if (!table) {
+    try {
+      table = JSON.parse(readFileSync(new URL(`./${file}`, import.meta.url), "utf8")) as Record<string, number>
+    } catch {
+      table = {}
+    }
+    LANE_TABLES.set(file, table)
+  }
+  return table
+}
 const PRIORS = JSON.parse(readFileSync(new URL("./priors.json", import.meta.url), "utf8")) as { weekRequests: number; dealerShare: Record<string, number>; arrivedBy: number[] }
 
 export const HOUR = 60
@@ -30,6 +45,21 @@ export type Config = {
   /** Cents of shadow cost per order already waiting for a driver: capacity pressure. */
   lambdaPerOpen: number
   lambdaFreeOpen: number
+  /** How far the driver's fee in a quote's cost leans on the lane's typical fee instead of the request's own number:
+   * 0 the request's number, 1 the lane's (a blend in logs between). The request's number is the lane's times a noise
+   * that drivers do not share. */
+  refLaneQuote: number
+  /** The same for the fees the desk posts: the opening fee, the ramp and its cap. */
+  refLaneFee: number
+  /** With a start model: how far a quote's cost follows the fee the model expects for this order, against
+   * `costStartMean` for the usual order. 0: every order costs the same multiple of its typical fee. */
+  costStart: number
+  costStartMean: number
+  /** Added to the start model's fallback fee: this many typical fees times the late model's chance for the order. */
+  startLate: number
+  /** The file of the lanes' typical fees, beside the desk's code. Another file serves to test a table on worlds it
+   * was not built from. */
+  lanesFile: string
   /** The surcharge counts only the waiting orders whose last on-time pickup is within this many minutes: an order
    * due after the weekend takes no driver from one due tomorrow. 0: all waiting orders. */
   lambdaHorizon: number
@@ -205,6 +235,12 @@ export const DEFAULTS: Config = {
   costNote: 0.05,
   lambdaPerOpen: 150,
   lambdaFreeOpen: 15,
+  refLaneQuote: 0,
+  refLaneFee: 0,
+  costStart: 0,
+  costStartMean: 0.95,
+  startLate: 0,
+  lanesFile: "lanes.json",
   lambdaHorizon: 0,
   minSlack: 150,
   minAwake: 360,
@@ -639,6 +675,37 @@ export class Desk {
     return latest >= Math.max(pickup[0], earliest) ? latest : null
   }
 
+  /** log(typical fee / the lane table's value) of each single-leg request seen on a lane the table knows. */
+  laneRatios: number[] = []
+  private laneFactorAt = 0
+  private laneFactorValue = 1
+
+  /** This world's typical fees over the lane table's: 1 while the requests seen do not plainly say otherwise. The
+   * table comes from practice worlds, where the world's factor was 1 in every one; a world that scales its fees is
+   * seen in the median of the requests' ratios, and the table then moves with it. The bar (4 standard errors of the
+   * median, and 4% at least) is one that no practice or ranking world came near. */
+  laneFactor(): number {
+    const n = this.laneRatios.length
+    if (n < 30) return 1
+    if (this.laneFactorAt !== n) {
+      const sorted = [...this.laneRatios].sort((a, b) => a - b)
+      const median = sorted[n >> 1]!
+      this.laneFactorAt = n
+      this.laneFactorValue = Math.abs(median) > Math.max(0.04, 0.64 / Math.sqrt(n)) ? Math.exp(median) : 1
+    }
+    return this.laneFactorValue
+  }
+
+  /** The typical fee to reckon with for a request, in cents: its own number, or leaning by `weight` on its lane's. */
+  refOf(request: PriceRequest, weight: number): number {
+    const ref = request.referenceFeeCents
+    if (weight <= 0 || request.legs.length !== 1) return ref
+    const leg = request.legs[0]!
+    const lane = lanesOf(this.cfg.lanesFile)[`${leg.pickup.placeId}>${leg.delivery.placeId}`]
+    if (lane === undefined || lane <= 0) return ref
+    return Math.exp((1 - weight) * Math.log(ref) + weight * Math.log(lane * this.laneFactor()))
+  }
+
   /** An order that waits for a driver, as the quotes count it. */
   isBacklog(o: Ord): boolean {
     if (o.bookedAt !== null || !o.legs.some((l) => !l.delivered)) return false
@@ -789,6 +856,10 @@ export class Desk {
       seenDealer.list += request.options[0]!.listPriceCents
       this.dealerSeen.set(request.dealerId, seenDealer)
       this.requestsSeen++
+      if (request.legs.length === 1) {
+        const known = lanesOf(this.cfg.lanesFile)[`${request.legs[0]!.pickup.placeId}>${request.legs[0]!.delivery.placeId}`]
+        if (known !== undefined && known > 0 && request.referenceFeeCents > 0) this.laneRatios.push(Math.log(request.referenceFeeCents / known))
+      }
     }
     this.requests.set(request.id, request)
     if (this.now >= request.respondBy) return
@@ -846,7 +917,7 @@ export class Desk {
       const optionLane: Lane = cfg.marketTags ? { ...lane, tags: [band, skipped ? "skip" : option.kind] } : skipped && (cfg.skipShift !== 0 || cfg.skipReach < 1) ? { ...lane, ...(cfg.skipShift !== 0 ? { shift: cfg.skipShift } : {}), ...(cfg.skipReach < 1 ? { reach: cfg.skipReach } : {}) } : lane
       lanes[option.kind] = optionLane
       const x = feats[option.kind]!
-      const k = cfg.feeModel ? Math.max(0.6, dot(cfg.feeModel, x)) : cfg.feeK + (option.kind === "same_day" ? cfg.costSameDay : 0) + (priv ? cfg.costPrivate : 0) + (leg.car.premium ? cfg.costPremium : 0) + (hasFact ? cfg.costNote : 0) + (back ? cfg.costTrade : 0)
+      const k = cfg.feeModel ? Math.max(0.6, dot(cfg.feeModel, x)) : cfg.feeK + (option.kind === "same_day" ? cfg.costSameDay : 0) + (priv ? cfg.costPrivate : 0) + (leg.car.premium ? cfg.costPremium : 0) + (hasFact ? cfg.costNote : 0) + (back ? cfg.costTrade : 0) + (cfg.costStart > 0 && cfg.startModel ? cfg.costStart * (this.startPlan(x, this.now).expect - cfg.costStartMean) : 0)
       const pLate = back && cfg.tradeLate !== null ? cfg.tradeLate : cfg.lateModel ? 1 / (1 + Math.exp(-dot(cfg.lateModel, x))) : 0
       detail[`late_${option.kind}`] = Math.round(pLate * 1000) / 1000
       lates[option.kind] = pLate
@@ -864,7 +935,7 @@ export class Desk {
         detail[`point_${option.kind}`] = Math.round(point)
         detail[`loss_${option.kind}`] = Math.round(trustLoss)
       }
-      const cost = Math.max(request.referenceFeeCents * k, cfg.feeFloor * 1.15) + lambda + pLate * (shadow + cfg.lateLoss * option.listPriceCents * 1.4 + trustLoss) - (cfg.ctrlPow > 0 ? 0.1 * (cfg.ctrlPadExcess ? shadow - cfg.lateShadow : shadow) : 0) - trust
+      const cost = Math.max(this.refOf(request, cfg.refLaneQuote) * k, cfg.feeFloor * 1.15) + lambda + pLate * (shadow + cfg.lateLoss * option.listPriceCents * 1.4 + trustLoss) - (cfg.ctrlPow > 0 ? 0.1 * (cfg.ctrlPadExcess ? shadow - cfg.lateShadow : shadow) : 0) - trust
       let mult: number
       if (explore !== null) mult = explore
       else {
@@ -1205,11 +1276,19 @@ export class Desk {
 
   /** The opening fee that saves the most by the start model, as a multiple of the typical fee. */
   bestStart(feat: Record<string, number>, postAt: number): number {
+    return this.startPlan(feat, postAt).start
+  }
+
+  /** The start model's plan for an order posted at `postAt`: the opening fee, and the fee to expect in the end (the
+   * opening fee where a driver books at it, the fallback where not), both as multiples of the typical fee. */
+  startPlan(feat: Record<string, number>, postAt: number): { start: number; expect: number } {
     const cfg = this.cfg
     const model = cfg.startModel!
     const day = Math.floor(postAt / DAY)
     const base = dot(model, { ...feat, fee: 0, mon: day === 0 ? 1 : 0, d1: day === 1 ? 1 : 0, d2: day === 2 ? 1 : 0, d3: day === 3 ? 1 : 0, postFri: day === 4 ? 1 : 0, evening: (postAt % DAY) / 60 >= 17 ? 1 : 0 })
-    const fallback = cfg.startFallbackDay?.[day] ?? cfg.startFallback
+    // An order that the late model fears costs more than a dearer fee when it finds no driver at the opening fee.
+    const fear = cfg.startLate > 0 && cfg.lateModel ? cfg.startLate / (1 + Math.exp(-dot(cfg.lateModel, feat))) : 0
+    const fallback = (cfg.startFallbackDay?.[day] ?? cfg.startFallback) + fear
     let best = cfg.startMax
     let bestGain = -Infinity
     for (let p = cfg.startMin; p <= cfg.startMax + 1e-9; p += 0.01) {
@@ -1219,7 +1298,7 @@ export class Desk {
         best = p
       }
     }
-    return Math.round(best * 100) / 100
+    return { start: Math.round(best * 100) / 100, expect: fallback - bestGain }
   }
 
   /** The fee schedule for a share of the order's work from now: a calm ramp, or a steep one once time is short. */
@@ -1227,7 +1306,7 @@ export class Desk {
     const cfg = this.cfg
     const first = ord.order.legs[0]!
     const boost = (ord.order.legs.some((l) => l.pickup.privateAddress) ? cfg.privateFee : 1) * (first.car.premium ? cfg.premiumFee : 1)
-    const ref = ord.request.referenceFeeCents * share * boost
+    const ref = this.refOf(ord.request, cfg.refLaneFee) * share * boost
     const steps: FeeStep[] = []
     const add = (at: number, fee: number) => {
       const cents = Math.max(1, Math.round(fee), steps.at(-1)?.feeCents ?? 0)
