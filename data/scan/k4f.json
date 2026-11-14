@@ -1,0 +1,16 @@
+{
+ "k4-om2-of105-b40-s120": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 40, "minSlack": 120},
+ "k4-null": {"offerMin": 0.004},
+ "k4-om1-of105": {"offerMin": 0.001, "offerFee": 1.05},
+ "k4-pf100-cp25": {"privateFee": 1.0, "costPrivate": 0.25},
+ "k4-all3": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 40, "minSlack": 120, "privateFee": 1.0, "costPrivate": 0.2},
+ "k4-b40": {"deliveryBuffer": 40},
+ "k4-of105": {"offerFee": 1.05},
+ "k4-b50-s120": {"deliveryBuffer": 50, "minSlack": 120},
+ "k4-om2": {"offerMin": 0.002},
+ "k4-b40-s120-pf100-cp20": {"deliveryBuffer": 40, "minSlack": 120, "privateFee": 1.0, "costPrivate": 0.2},
+ "k4-om1-of105-b40-s120": {"offerMin": 0.001, "offerFee": 1.05, "deliveryBuffer": 40, "minSlack": 120},
+ "k4-all3-cp25": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 40, "minSlack": 120, "privateFee": 1.0, "costPrivate": 0.25},
+ "k4-om2-of105-b50-s120": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 50, "minSlack": 120},
+ "k4-om2-of105-b40": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 40}
+}

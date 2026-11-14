@@ -17,7 +17,7 @@ for tag in tags:
     rows = []
     n = 0
     for s in seeds:
-        paths = glob.glob(f'data/runs/{tag}-{s}-L8.json')
+        paths = (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz'))
         if not paths:
             continue
         n += 1

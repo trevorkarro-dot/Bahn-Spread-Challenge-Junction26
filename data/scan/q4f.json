@@ -1,0 +1,6 @@
+{
+ "q4-ma300": {"minAwake": 300},
+ "q4-ds480-db105": {"dropSafe": 480, "dropBump": 1.05},
+ "q4-s180": {"minSlack": 180},
+ "q4-cp5": {"ctrlPow": 5}
+}

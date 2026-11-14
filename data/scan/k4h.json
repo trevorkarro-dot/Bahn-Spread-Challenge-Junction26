@@ -1,0 +1,6 @@
+{
+ "k4-b40-s90": {"deliveryBuffer": 40, "minSlack": 90},
+ "k4-u4-ls7": {"offerMin": 0.002, "offerFee": 1.05, "deliveryBuffer": 40, "minSlack": 120, "lateShadow": 7000},
+ "k4-b40-s120-ls8": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 8000},
+ "k4-b40": {"deliveryBuffer": 40}
+}

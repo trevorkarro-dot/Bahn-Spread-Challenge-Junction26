@@ -1,0 +1,3 @@
+{
+ "q5-fix-prem4-tr80": {"changeRef": true, "expiredRepost": true, "quotePremium": true, "costPremium": 0.4, "premiumFee": 1.4, "premiumNear": 11, "quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "tradeNear": 80}
+}

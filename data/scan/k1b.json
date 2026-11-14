@@ -1,0 +1,6 @@
+{
+ "k1-urg-soft": {"urgentStart": 1.4, "urgentStep": 0.2, "urgentEvery": 25, "urgentMax": 2.5},
+ "k1-late-lo-slow": {"lateStart": 1.0, "lateEvery": 180, "lateStep": 0.07},
+ "k1-urgsoft-lateslow": {"urgentStart": 1.4, "urgentStep": 0.2, "urgentEvery": 25, "lateStart": 1.0, "lateEvery": 180, "lateStep": 0.07},
+ "k1-pow2-h19-s24": {"rampPow": 2, "feeHold": 19, "feeSteps": 24}
+}

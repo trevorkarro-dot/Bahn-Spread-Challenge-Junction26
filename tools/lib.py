@@ -23,6 +23,9 @@ def fmt(m):
 
 
 def load(path):
+    if path.endswith('.gz'):
+        import gzip
+        return json.load(gzip.open(path, 'rt', encoding='utf8'))
     return json.load(open(path))
 
 

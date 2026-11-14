@@ -1,0 +1,7 @@
+{
+ "k2-f1125-l45": {"feeK": 1.125, "lambdaPerOpen": 45},
+ "k2-calm": {"market.shockSd": 0.02, "market.placeShockSd": 0.01, "market.daySd": 0.02},
+ "k2-f1125-l35": {"feeK": 1.125, "lambdaPerOpen": 35},
+ "k2-f1125-l45-calm": {"feeK": 1.125, "lambdaPerOpen": 45, "market.shockSd": 0.02, "market.placeShockSd": 0.01, "market.daySd": 0.02},
+ "k2-f110-l60": {"feeK": 1.10, "lambdaPerOpen": 60}
+}

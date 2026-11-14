@@ -1,0 +1,10 @@
+{
+ "k3-m128t112": {"startFallbackDay.0": 1.28, "startFallbackDay.3": 1.12},
+ "k3-m128": {"startFallbackDay.0": 1.28},
+ "k3-t112": {"startFallbackDay.3": 1.12},
+ "k3-m135t112": {"startFallbackDay.0": 1.35, "startFallbackDay.3": 1.12},
+ "k3-slope": {"startFallbackDay.0": 1.28, "startFallbackDay.1": 1.24, "startFallbackDay.3": 1.12, "startFallbackDay.4": 1.0},
+ "k3-fb130csm98": {"startFallback": 1.3, "costStartMean": 0.98},
+ "k3-max103up": {"startMax": 1.03, "startFallbackDay.0": 1.28, "startFallbackDay.1": 1.28, "startFallbackDay.2": 1.28, "startFallbackDay.3": 1.28},
+ "k3-alldn": {"startFallbackDay.0": 1.14, "startFallbackDay.1": 1.14, "startFallbackDay.2": 1.14, "startFallbackDay.3": 1.14, "startFallbackDay.4": 1.0}
+}

@@ -1,0 +1,10 @@
+{
+ "k4-tr": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5},
+ "k4-tr-pf125": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25},
+ "k4-tr-ct70": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.7},
+ "k4-pf125": {"privateFee": 1.25},
+ "k4-b20-s90": {"deliveryBuffer": 20, "minSlack": 90},
+ "k4-om6-of95": {"offerMin": 0.006, "offerFee": 0.95},
+ "k4-om3-of105": {"offerMin": 0.003, "offerFee": 1.05},
+ "k4-ls7-s120": {"lateShadow": 7000, "minSlack": 120}
+}

@@ -1,0 +1,24 @@
+{
+ "k5-flms-ja": {
+  "feeK": 1.126,
+  "lambdaPerOpen": 45,
+  "minSlack": 120
+ },
+ "k5-s3-ja": {
+  "feeK": 1.151,
+  "deliveryBuffer": 20,
+  "minSlack": 120,
+  "lateStep": 0.07
+ },
+ "k5-flms-jb": {
+  "feeK": 1.124,
+  "lambdaPerOpen": 45,
+  "minSlack": 120
+ },
+ "k5-s3-jb": {
+  "feeK": 1.149,
+  "deliveryBuffer": 20,
+  "minSlack": 120,
+  "lateStep": 0.07
+ }
+}

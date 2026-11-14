@@ -16,7 +16,7 @@ model = json.load(open(sys.argv[3])) if len(sys.argv) > 3 else None
 rows = []
 n = 0
 for s in seeds:
-    for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+    for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
         n += 1
         run = load(path)
         posts = {}

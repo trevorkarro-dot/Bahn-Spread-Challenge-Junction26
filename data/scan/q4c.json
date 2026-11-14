@@ -1,0 +1,6 @@
+{
+ "q4-om1-of105": {"offerMin": 0.001, "offerFee": 1.05},
+ "q4-b40-s120": {"deliveryBuffer": 40, "minSlack": 120},
+ "q4-om2-of105": {"offerMin": 0.002, "offerFee": 1.05},
+ "q4-b40-s90": {"deliveryBuffer": 40, "minSlack": 90}
+}

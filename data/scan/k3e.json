@@ -1,0 +1,6 @@
+{
+ "k3-triodn-k1175": {"costSameDay": 0.05, "costPrivate": 0.1, "costNote": 0.02, "feeK": 1.175},
+ "k3-trio0-k119": {"costSameDay": 0.0, "costPrivate": 0.05, "costNote": 0.0, "feeK": 1.19},
+ "k3-olane-csm97": {"startModel.lnOLane": -0.855, "costStartMean": 0.97},
+ "k3-tdn-t128f112": {"costSameDay": 0.05, "costPrivate": 0.1, "costNote": 0.02, "feeK": 1.175, "startFallbackDay.3": 1.28, "startFallbackDay.4": 1.12}
+}

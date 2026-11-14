@@ -1,0 +1,41 @@
+{
+ "k5-jit-a": {
+  "feeK": 1.151
+ },
+ "k5-jit-b": {
+  "feeK": 1.149
+ },
+ "k5-us14-war183": {
+  "urgentStart": 1.4,
+  "market.war": -0.183
+ },
+ "k5-fl-s5w": {
+  "feeK": 1.125,
+  "lambdaPerOpen": 45,
+  "deliveryBuffer": 20,
+  "minSlack": 120,
+  "lateStep": 0.07,
+  "urgentStart": 1.4,
+  "market.war": -0.183
+ },
+ "k5-fl35-s5w": {
+  "feeK": 1.125,
+  "lambdaPerOpen": 35,
+  "deliveryBuffer": 20,
+  "minSlack": 120,
+  "lateStep": 0.07,
+  "urgentStart": 1.4,
+  "market.war": -0.183
+ },
+ "k5-fl-us14-war183": {
+  "feeK": 1.125,
+  "lambdaPerOpen": 45,
+  "urgentStart": 1.4,
+  "market.war": -0.183
+ },
+ "k5-fl-war183": {
+  "feeK": 1.125,
+  "lambdaPerOpen": 45,
+  "market.war": -0.183
+ }
+}

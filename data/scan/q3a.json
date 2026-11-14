@@ -1,0 +1,9 @@
+{
+ "q3-n80": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "tradeNear": 80},
+ "q3-null": {},
+ "q3-n80-l10": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.1, "costTrade": 0.5, "tradeNear": 80},
+ "q3-n40": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "tradeNear": 40},
+ "q3-n160": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "tradeNear": 160},
+ "q3-n80-l10-c30": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.1, "costTrade": 0.3, "tradeNear": 80},
+ "q3-n80-c70": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.7, "tradeNear": 80}
+}

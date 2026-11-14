@@ -1,0 +1,6 @@
+{
+ "k4-tr-ct70": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.7},
+ "k4-ds480-db105": {"dropSafe": 480, "dropBump": 1.05},
+ "k4-lt35-cp4": {"lateTarget": 0.035, "ctrlPow": 4},
+ "k4-tr": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5}
+}

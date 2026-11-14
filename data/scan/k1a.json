@@ -1,0 +1,10 @@
+{
+ "k1-late-lo-slow": {"lateStart": 1.0, "lateEvery": 180, "lateStep": 0.07},
+ "k1-urg-soft": {"urgentStart": 1.4, "urgentStep": 0.2, "urgentEvery": 25, "urgentMax": 2.5},
+ "k1-pow2-h19-s24": {"rampPow": 2, "feeHold": 19, "feeSteps": 24},
+ "k1-late-lo-fast": {"lateStart": 1.0, "lateEvery": 90, "lateStep": 0.15},
+ "k1-urg-lo-fast": {"urgentStart": 1.4, "urgentStep": 0.3, "urgentEvery": 15},
+ "k1-s12-pow1.1": {"feeSteps": 12, "rampPow": 1.1},
+ "k1-urg-hard": {"urgentStart": 1.8, "urgentStep": 0.3, "urgentEvery": 15, "urgentMax": 3.5},
+ "k1-late-hi-slow": {"lateStart": 1.1, "lateEvery": 180, "lateStep": 0.07}
+}

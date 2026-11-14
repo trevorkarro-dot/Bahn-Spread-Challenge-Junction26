@@ -9,7 +9,7 @@ from lib import load, ROAD
 tag, seeds = sys.argv[1], sys.argv[2].split(',')
 reqs = []
 for s in seeds:
-    for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+    for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
         run = load(path)
         for e in run['events']:
             if e['kind'] != 'price_request':

@@ -1,0 +1,3 @@
+{
+ "k1-urg-soft": {"urgentStart": 1.4, "urgentStep": 0.2, "urgentEvery": 25, "urgentMax": 2.5}
+}

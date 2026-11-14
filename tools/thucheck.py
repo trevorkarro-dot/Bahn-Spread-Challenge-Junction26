@@ -15,7 +15,7 @@ for arg in sys.argv[2:]:
     tag, name = arg.split('=')
     rows = []
     for s in SETS[name]:
-        for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+        for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
             o = [r for r in orders(load(path)) if r['wonAt'] >= start]
             if o:
                 rows.append((sum(r['ontime'] for r in o) / len(o) * 100, s, len(o), sum(r['margin'] for r in o) / 100))

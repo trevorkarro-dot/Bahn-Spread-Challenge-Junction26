@@ -26,7 +26,7 @@ else:
     rows = []
     for tag in tags:
         for s in seeds:
-            for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+            for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
                 run = load(path)
                 posts = {}
                 for j in run['journal']:

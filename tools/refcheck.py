@@ -25,7 +25,7 @@ if len(sys.argv) > 2:
 reqs = []
 won = []
 for s in USUAL:
-    for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+    for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
         run = load(path)
         rows = {r['id']: r for r in orders(run)}
         quotes = {j['id']: j for j in run.get('journal', []) if j['what'] == 'quote'}

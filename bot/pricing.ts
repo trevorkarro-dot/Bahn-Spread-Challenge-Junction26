@@ -51,6 +51,9 @@ export type MarketConfig = {
    * price, times (0.5 - our share of the dealer's answered quotes that day) x 2 (0: not modelled). */
   dealerReact: number
   dealerReactMin: number // answered quotes of the dealer that day before the move counts
+  /** The width of the win curve that prices are set with, when it should differ from the one the model learns with
+   * (`scale`); 0: the same. */
+  quoteScale: number
 }
 
 export const MARKET_DEFAULTS: MarketConfig = {
@@ -72,6 +75,7 @@ export const MARKET_DEFAULTS: MarketConfig = {
   eventMax: 0.85,
   dealerReact: 0,
   dealerReactMin: 3,
+  quoteScale: 0,
 }
 
 /** `tags` name further parts of the flip point that the lane shares with others: its distance band, the option quoted.
@@ -158,9 +162,9 @@ export class Market {
 
   /** P(win) at log price multiple x, with the belief's uncertainty folded into the curve's width. While today may be a
    * price war or an outage, the curve is the mix of the cases. */
-  winProb(lane: Lane, x: number): number {
+  winProb(lane: Lane, x: number, scale = this.cfg.scale): number {
     const { m, v } = this.flip(lane)
-    const s = this.cfg.scale * Math.sqrt(1 + (Math.PI * v) / (8 * this.cfg.scale ** 2))
+    const s = scale * Math.sqrt(1 + (Math.PI * v) / (8 * scale ** 2))
     const reach = lane.reach ?? 1
     if (this.#cases.length === 0) return reach / (1 + Math.exp((x - m) / s))
     let p = 0
@@ -276,7 +280,7 @@ export class Market {
   best(lane: Lane, list: number, cost: number, lo = 0.9, hi = 3.0): { mult: number; p: number; ev: number } {
     let best = { mult: hi, p: 0, ev: -Infinity }
     for (let mult = lo; mult <= hi + 1e-9; mult += 0.01) {
-      const p = this.winProb(lane, Math.log(mult))
+      const p = this.winProb(lane, Math.log(mult), this.cfg.quoteScale > 0 ? this.cfg.quoteScale : this.cfg.scale)
       const ev = p * (list * mult - cost)
       if (ev > best.ev) best = { mult, p, ev }
     }

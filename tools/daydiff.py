@@ -15,7 +15,7 @@ for tag in sys.argv[2:4]:
     by = collections.defaultdict(lambda: [0, 0.0, 0.0, 0, 0.0])
     n = 0
     for s in seeds:
-        for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+        for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
             n += 1
             for r in orders(load(path)):
                 d = min(4, r['wonAt'] // 1440)

@@ -1,0 +1,16 @@
+{
+ "k5-fk1125-lpo45-ms120": {"feeK": 1.125, "lambdaPerOpen": 45, "minSlack": 120},
+ "k5-fk1125-lpo35": {"feeK": 1.125, "lambdaPerOpen": 35},
+ "k5-s3": {"deliveryBuffer": 20, "minSlack": 120, "lateStep": 0.07},
+ "k5-tr110": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5},
+ "k5-fk1125-lpo45-tr-db20-ms90": {"feeK": 1.125, "lambdaPerOpen": 45, "quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25, "deliveryBuffer": 20, "minSlack": 90},
+ "k5-s5": {"deliveryBuffer": 20, "minSlack": 120, "lateStep": 0.07, "urgentStart": 1.4, "market.war": -0.263},
+ "k5-fk1125": {"feeK": 1.125},
+ "k5-lpo45": {"lambdaPerOpen": 45},
+ "k5-fk110-lpo60": {"feeK": 1.10, "lambdaPerOpen": 60},
+ "k5-pf125": {"privateFee": 1.25},
+ "k5-tr110-ms120": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "minSlack": 120},
+ "k5-s5w": {"deliveryBuffer": 20, "minSlack": 120, "lateStep": 0.07, "urgentStart": 1.4, "market.war": -0.183},
+ "k5-fk1175-lpo21": {"feeK": 1.175, "lambdaPerOpen": 21},
+ "k5-ms120": {"minSlack": 120}
+}

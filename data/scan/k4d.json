@@ -1,0 +1,18 @@
+{
+ "k4-om2-of105": {"offerMin": 0.002, "offerFee": 1.05},
+ "k4-lt35-cp4": {"lateTarget": 0.035, "ctrlPow": 4},
+ "k4-ds240-db105": {"dropSafe": 240, "dropBump": 1.05},
+ "k4-b20-s120": {"deliveryBuffer": 20, "minSlack": 120},
+ "k4-pf100-cp20": {"privateFee": 1.0, "costPrivate": 0.2},
+ "k4-tr-ct90-tl30": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.3, "costTrade": 0.9},
+ "k4-om3-of110": {"offerMin": 0.003, "offerFee": 1.1},
+ "k4-ls7-lt35": {"lateShadow": 7000, "lateTarget": 0.035},
+ "k4-pf115-cp10": {"privateFee": 1.15, "costPrivate": 0.1},
+ "k4-om8-of105": {"offerMin": 0.008, "offerFee": 1.05},
+ "k4-om2-of95": {"offerMin": 0.002, "offerFee": 0.95},
+ "k4-age60-om3": {"offerAge": 60, "offerMin": 0.003},
+ "k4-ls5-cp4": {"lateShadow": 5000, "ctrlPow": 4},
+ "k4-b40-s120": {"deliveryBuffer": 40, "minSlack": 120},
+ "k4-b20-ls7": {"deliveryBuffer": 20, "lateShadow": 7000},
+ "k4-ds480-db105": {"dropSafe": 480, "dropBump": 1.05}
+}

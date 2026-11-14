@@ -7,7 +7,7 @@ from lib import load
 tag, seeds = sys.argv[1], sys.argv[2].split(',')
 acc = collections.defaultdict(lambda: [0, 0.0, 0, 0.0])
 for s in seeds:
-    for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+    for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
         run = load(path)
         for j in run.get('journal', []):
             if j['what'] != 'quote' or 'lambda' not in j:

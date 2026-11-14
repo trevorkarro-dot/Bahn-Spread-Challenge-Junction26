@@ -1,0 +1,10 @@
+{
+ "k5-tr": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25},
+ "k5-db20-ms90": {"deliveryBuffer": 20, "minSlack": 90},
+ "k5-tr-db20-ms90": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25, "deliveryBuffer": 20, "minSlack": 90},
+ "k5-sfd": {"startFallbackDay.0": 1.28, "startFallbackDay.3": 1.12},
+ "k5-fk1125-lpo45": {"feeK": 1.125, "lambdaPerOpen": 45},
+ "k5-sc065-fk1125": {"market.scale": 0.065, "feeK": 1.125},
+ "k5-tr-db20-ms90-sfd": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25, "deliveryBuffer": 20, "minSlack": 90, "startFallbackDay.0": 1.28, "startFallbackDay.3": 1.12},
+ "k5-all": {"quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "privateFee": 1.25, "deliveryBuffer": 20, "minSlack": 90, "startFallbackDay.0": 1.28, "startFallbackDay.3": 1.12, "feeK": 1.125, "lambdaPerOpen": 45, "market.scale": 0.065}
+}

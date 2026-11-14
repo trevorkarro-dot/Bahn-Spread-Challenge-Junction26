@@ -1,5 +1,5 @@
 """A week joined on Thursday 00:00 (the test finals' shape), by the day an order was won:
-python tools/thuday.py <file or tag> [<file or tag> ...]
+python tools/thuday.py [--from=0] <file or tag> [<file or tag> ...]   (--from=0: a full week)
 An argument that ends in .json is one saved week (a final's record); any other is a tag whose weeks are read from
 data/runs-gz and data/runs. Per argument: weeks, margin a week (mean, sd, quartiles), orders won, on-time share; then
 per day won: requests that came, orders won, the price over the list price, the fee over the typical fee, the late
@@ -14,7 +14,11 @@ def read(path):
     return json.load(open(path, encoding='utf8'))
 
 
-for arg in sys.argv[1:]:
+START = 4320
+for a in sys.argv[1:]:
+    if a.startswith('--from='):
+        START = int(a[7:])
+for arg in [a for a in sys.argv[1:] if not a.startswith('--')]:
     paths = [arg] if arg.endswith('.json') else sorted(glob.glob(f'data/runs-gz/{arg}-*-L8.json.gz') + glob.glob(f'data/runs/{arg}-*-L8.json'))
     if not arg.endswith('.json'):
         paths = [p for p in paths if os.path.basename(p).rsplit('-', 2)[0] == arg]
@@ -25,7 +29,7 @@ for arg in sys.argv[1:]:
         o = orders(run)
         weeks.append((run['score']['marginCents'] / 100, len(o), run['score']['onTimeShare'] * 100))
         for e in run['events']:
-            if e['kind'] == 'price_request' and e['request']['arrivedAt'] >= 4320:
+            if e['kind'] == 'price_request' and e['request']['arrivedAt'] >= START:
                 days[e['request']['arrivedAt'] // 1440]['req'] += 1
         for r in o:
             d = days[r['wonAt'] // 1440]

@@ -1,0 +1,4 @@
+{
+ "q5-fl-s5w-ms90": {"feeK": 1.125, "lambdaPerOpen": 45, "deliveryBuffer": 20, "minSlack": 90, "lateStep": 0.07, "urgentStart": 1.4, "market.war": -0.183},
+ "q5-flms-ja": {"feeK": 1.126, "lambdaPerOpen": 45, "minSlack": 120}
+}

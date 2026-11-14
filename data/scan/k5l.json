@@ -1,0 +1,8 @@
+{
+ "k5-flms-jc": {"feeK": 1.1255, "lambdaPerOpen": 45, "minSlack": 120},
+ "k5-jit-c": {"feeK": 1.1505},
+ "k5-fk1125-lpo45": {"feeK": 1.125, "lambdaPerOpen": 45},
+ "k5-flms-jd": {"feeK": 1.1245, "lambdaPerOpen": 45, "minSlack": 120},
+ "k5-jit-d": {"feeK": 1.1495},
+ "k5-fk1125-lpo35": {"feeK": 1.125, "lambdaPerOpen": 35}
+}

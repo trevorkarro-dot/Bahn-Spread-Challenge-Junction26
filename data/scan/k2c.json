@@ -1,0 +1,4 @@
+{
+ "k2-f110-l60": {"feeK": 1.10, "lambdaPerOpen": 60},
+ "k2-f1075-l80": {"feeK": 1.075, "lambdaPerOpen": 80}
+}

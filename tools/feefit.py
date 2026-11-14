@@ -18,7 +18,7 @@ else:
     rows = []
     for tag in sys.argv[4:]:
         for s in USUAL:
-            for path in glob.glob(f'data/runs/{tag}-{s}-L8.json'):
+            for path in (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz')):
                 for r in orders(load(path)):
                     x = (r['q'] or {}).get('feat', {}).get(r['option'])
                     lane = lanes.get(r['pu'] + '>' + r['de'])

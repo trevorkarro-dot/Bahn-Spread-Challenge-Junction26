@@ -16,7 +16,7 @@ tag = sys.argv[2]
 rows = []
 n = 0
 for s in seeds:
-    paths = glob.glob(f'data/runs/{tag}-{s}-L8.json')
+    paths = (glob.glob(f'data/runs/{tag}-{s}-L8.json') + glob.glob(f'data/runs-gz/{tag}-{s}-L8.json.gz'))
     if paths:
         n += 1
         rows += orders(load(paths[0]))

@@ -1,0 +1,6 @@
+{
+ "k5-fl-s5w-ms90": {"feeK": 1.125, "lambdaPerOpen": 45, "deliveryBuffer": 20, "minSlack": 90, "lateStep": 0.07, "urgentStart": 1.4, "market.war": -0.183},
+ "k5-s3-war183": {"deliveryBuffer": 20, "minSlack": 120, "lateStep": 0.07, "market.war": -0.183},
+ "k5-fl35-ms120": {"feeK": 1.125, "lambdaPerOpen": 35, "minSlack": 120},
+ "k5-fsm-ja": {"feeK": 1.126, "lambdaPerOpen": 45, "deliveryBuffer": 20, "minSlack": 90, "lateStep": 0.07, "urgentStart": 1.4, "market.war": -0.183}
+}

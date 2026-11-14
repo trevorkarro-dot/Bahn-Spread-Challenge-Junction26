@@ -1,0 +1,9 @@
+{
+ "k4-b40-s120-ls10": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 10000},
+ "k4-ls8": {"lateShadow": 8000},
+ "k4-b40-s90-ls8": {"deliveryBuffer": 40, "minSlack": 90, "lateShadow": 8000},
+ "k4-b40-s120-ls9": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 9000},
+ "k4-b40-s120-ls8-ll50": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 8000, "lateLoss": 0.5},
+ "k4-b40-s120-ls8-lt35": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 8000, "lateTarget": 0.035},
+ "k4-b40-s120-ls8-om2": {"deliveryBuffer": 40, "minSlack": 120, "lateShadow": 8000, "offerMin": 0.002}
+}

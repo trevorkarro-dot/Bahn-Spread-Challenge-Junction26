@@ -76,7 +76,13 @@ export type Config = {
    * hours after the customer's hour. With a number here, the new car's delivery carries the customer's hour plus this
    * many minutes as its own window, while a driver can still meet it. Null posts it without one. */
   tradeSlot: number | null
+  /** With quoteTradeIns: only where at least this many drivers live within 80 km of the new car's pickup. In saved
+   * weeks trade-ins from such places arrive on time 92% of the time, from sparser places about half the time. 0: all. */
+  tradeNear: number
   quotePremium: boolean
+  /** With quotePremium: only where at least this many experienced drivers (the only ones who may drive a premium
+   * car) live within 80 km of the pickup. */
+  premiumNear: number
   quoteUnsure: boolean
   quotePrivatePickup: boolean
   /** Fitted models over the request features: log-odds of a late order, and the fee as a multiple of the typical fee. */
@@ -220,6 +226,28 @@ export type Config = {
   offerMin: number
   offerUntil: number
   offerAge: number
+  /** Direct offers go out only for gigs whose pickup opens within this many hours. */
+  offerAhead: number
+  /** When a dealer moves an order to another place, the fees follow the new lane's typical fee (and what was shown so
+   * far is rescaled); without it the fees stay on the lane of the request. */
+  changeRef: boolean
+  /** A gig that the world expires while our withdrawal of it is on its way (a private seller's slot passed) is
+   * posted again; without it the car stayed tied to the dead gig and was never delivered. */
+  expiredRepost: boolean
+  /** Two single-car orders in one gig. A car that is won looks for another car that no driver has booked yet and whose
+   * pickup lies within `pairHop` road minutes of this car's delivery (or the other way round), with at most `pairDrive`
+   * minutes of driving in all, both on time, at most `pairIdle` minutes of waiting between the two, and `pairLead`
+   * minutes left before the last start that keeps both on time. The two go out as one gig at `pairFee` times the sum of
+   * their typical fees (from half of `pairWait` on: `pairFee2`, when that is higher). No driver after `pairWait`
+   * minutes: the gig is withdrawn and each car goes alone, as it would have without this. */
+  pairs: boolean
+  pairHop: number
+  pairDrive: number
+  pairLead: number
+  pairIdle: number
+  pairFee: number
+  pairFee2: number
+  pairWait: number
   // --- practice clock ---
   tick: number
   wakeOnWin: boolean
@@ -253,7 +281,9 @@ export const DEFAULTS: Config = {
   costTrade: 0.2,
   tradeLate: 0.15,
   tradeSlot: 0,
+  tradeNear: 0,
   quotePremium: false,
+  premiumNear: 0,
   quoteUnsure: false,
   quotePrivatePickup: false,
   lateModel: null,
@@ -333,6 +363,17 @@ export const DEFAULTS: Config = {
   offerMin: 0.004,
   offerUntil: 22.5,
   offerAge: 0,
+  offerAhead: 20,
+  changeRef: false,
+  expiredRepost: false,
+  pairs: false,
+  pairHop: 30,
+  pairDrive: 300,
+  pairLead: 180,
+  pairIdle: 60,
+  pairFee: 0.75,
+  pairFee2: 0,
+  pairWait: 60,
   tick: 10,
   wakeOnWin: false,
   playFrom: 0,
@@ -360,6 +401,7 @@ export type Ord = {
   late: boolean // no on-time pickup is left: post without windows
   lateSince: number | null // the minute it became late
   shownFee: number // the highest fee a gig of this order has shown, in cents
+  refScale: number // the lane's typical fee now over the request's lane: 1 until the dealer moves the order (changeRef)
   firstPostAt: number | null
   bookedAt: number | null
   drops: number
@@ -373,6 +415,7 @@ export type Ord = {
   pLate: number // the lateness model's estimate when the order was quoted
   lateKnown: boolean // delivered after its deadline, or refunded
   alone: boolean // a trade-in whose two cars go in separate gigs from now on
+  noPair: boolean // it was in a gig with another order's car that found no driver, or it was dropped: it goes alone
   counted: boolean // its revenue line has come: the dealer's count already holds it
 }
 
@@ -389,6 +432,8 @@ type GigRec = {
   offered: Set<string>
   openOffers: number
   views: number
+  expired?: boolean // the world said it expired
+  pair?: { orderId: string; until: number } // a second order's car (single-car orders both) and when to give up on the pair
   bookedFee?: number // what the driver who holds it booked it for, in cents
 }
 
@@ -572,6 +617,8 @@ export class Desk {
         this.busy.set(event.driverId, (this.busy.get(event.driverId) ?? 0) + 1)
         const ord = this.orders.get(gig.orderId)
         if (ord) ord.bookedAt = event.at
+        const second = gig.pair ? this.orders.get(gig.pair.orderId) : undefined
+        if (second) second.bookedAt = event.at
         return
       }
       case "gig_started": {
@@ -886,8 +933,10 @@ export class Desk {
       this.push({ type: "quote", requestId: request.id, prices: { [first.kind]: first.listPriceCents * 6 } })
     }
     if (request.legs.length > 1 && !cfg.quoteTradeIns) return decline("trade-in")
+    if (request.legs.length > 1 && cfg.tradeNear > 0 && this.roster.near(leg.pickup.placeId, 80) < cfg.tradeNear) return decline("trade-in far")
     if (facts.unsure && !cfg.quoteUnsure) return decline("note unsure")
     if (leg.car.premium && !cfg.quotePremium) return decline("premium")
+    if (leg.car.premium && cfg.premiumNear > 0 && this.roster.near(leg.pickup.placeId, 80, experienced) < cfg.premiumNear) return decline("premium far")
     // In a trade-in the old car waits at the customer's: its pickup is part of the delivery visit, not a slot of its own.
     const back = request.legs.length > 1 ? request.legs[1]! : null
     if (back && back.car.premium && !cfg.quotePremium) return decline("premium")
@@ -1005,6 +1054,7 @@ export class Desk {
       late: false,
       lateSince: null,
       shownFee: 0,
+      refScale: 1,
       firstPostAt: null,
       bookedAt: null,
       drops: 0,
@@ -1018,6 +1068,7 @@ export class Desk {
       pLate: quote?.late[order.option] ?? 0.05,
       lateKnown: false,
       alone: false,
+      noPair: false,
       counted: false,
     }
     this.orders.set(order.id, ord)
@@ -1029,6 +1080,23 @@ export class Desk {
     if (!ord) return
     ord.order = order
     this.journal.push({ t: this.now, what: "changed", id: order.id, deadline: order.deadline, lastPickupAt: order.lastPickupAt })
+    if (this.cfg.changeRef && order.legs.length === 1 && ord.request.legs.length === 1) {
+      // Drivers answer the lane's fee: a car that now goes somewhere else is worth the new lane's fee to them.
+      const was = ord.request.legs[0]!
+      const leg = order.legs[0]!
+      const lanes = lanesOf(this.cfg.lanesFile)
+      const before = lanes[`${was.pickup.placeId}>${was.delivery.placeId}`]
+      const after = lanes[`${leg.pickup.placeId}>${leg.delivery.placeId}`]
+      if (before !== undefined && before > 0 && after !== undefined && after > 0) {
+        const scale = Math.min(4, Math.max(0.25, after / before))
+        if (Math.abs(scale / ord.refScale - 1) > 0.02) {
+          ord.shownFee *= scale / ord.refScale
+          if (ord.climb) ord.climb = { ...ord.climb, to: (ord.climb.to * scale) / ord.refScale }
+          ord.refScale = scale
+          this.journal.push({ t: this.now, what: "reref", id: order.id, scale: Math.round(scale * 1000) / 1000 })
+        }
+      }
+    }
     // An open gig carries the old windows: take it out and post again. A booked driver is re-routed by the world.
     for (const gig of this.gigsOf(ord)) if (gig.status === "open") this.withdraw(gig)
   }
@@ -1036,7 +1104,27 @@ export class Desk {
   onCancelled(orderId: string): void {
     const ord = this.orders.get(orderId)
     if (!ord) return
-    for (const gig of this.gigsOf(ord)) gig.status = "gone"
+    for (const gig of this.gigsOf(ord)) {
+      if (gig.pair) {
+        const otherId = gig.orderId === orderId ? gig.pair.orderId : gig.orderId
+        const other = this.orders.get(otherId)
+        if (gig.status === "open") {
+          // The world withdrew the open gig: the other car is posted again, alone.
+          gig.status = "gone"
+          if (other) {
+            other.noPair = true
+            if (other.legs[0]!.gigId === gig.id) other.legs[0]!.gigId = null
+          }
+        } else {
+          // Booked or under way: the gig goes on with the other car.
+          gig.orderId = otherId
+          gig.legs = [0]
+          delete gig.pair
+        }
+        continue
+      }
+      gig.status = "gone"
+    }
     this.orders.delete(orderId)
     this.journal.push({ t: this.now, what: "cancelled", id: orderId })
   }
@@ -1049,6 +1137,10 @@ export class Desk {
     const ord = this.orders.get(gig.stops[0]!.orderId)
     if (!ord) return
     const legs = [...new Set(gig.stops.filter((stop) => stop.orderId === ord.order.id).map((stop) => stop.leg))]
+    // A gig with a second order's car (two single-car orders in one gig).
+    const others = [...new Set(gig.stops.map((stop) => stop.orderId))].filter((id) => id !== ord.order.id)
+    const second = others.length === 1 ? this.orders.get(others[0]!) : undefined
+    const pair = second && ord.order.legs.length === 1 && second.order.legs.length === 1 ? { orderId: second.order.id, until: gig.postedAt + this.cfg.pairWait } : undefined
     this.gigs.set(gig.id, {
       id: gig.id,
       post: { type: "post", stops: gig.stops, audience: gig.audience, schedule: gig.schedule },
@@ -1062,8 +1154,13 @@ export class Desk {
       offered: new Set(),
       openOffers: 0,
       views: 0,
+      ...(pair ? { pair } : {}),
     })
     for (const leg of legs) if (ord.legs[leg]) ord.legs[leg]!.gigId = gig.id
+    if (pair && second) {
+      second.legs[0]!.gigId = gig.id
+      second.firstPostAt ??= gig.postedAt
+    }
     ord.firstPostAt ??= gig.postedAt
     // The late fee curve counts from the order's first late post.
     if (gig.postedAt > ord.order.lastPickupAt) ord.lateSince ??= gig.postedAt
@@ -1096,6 +1193,7 @@ export class Desk {
       rec.post = { ...rec.post, schedule: gig.schedule }
       if (rec.status === "open" || rec.status === "booked" || rec.status === "started") {
         live.set(rec.orderId, [...(live.get(rec.orderId) ?? []), rec])
+        if (rec.pair) live.set(rec.pair.orderId, [...(live.get(rec.pair.orderId) ?? []), rec])
         if (rec.driverId) this.busy.set(rec.driverId, (this.busy.get(rec.driverId) ?? 0) + 1)
       }
     }
@@ -1106,7 +1204,7 @@ export class Desk {
       let open = false
       ord.legs.forEach((state, leg) => {
         if (state.delivered) return
-        const gig = mine.find((rec) => rec.legs.includes(leg))
+        const gig = mine.find((rec) => this.legsIn(rec, ord.order.id).includes(leg))
         state.gigId = gig ? gig.id : null
         if (gig && gig.status !== "open") booked = true
         else open = true
@@ -1124,6 +1222,21 @@ export class Desk {
     return [...ids].map((id) => this.gigs.get(id)).filter((g): g is GigRec => g !== undefined)
   }
 
+  /** The orders whose cars a gig carries: its own, and for a pair gig the second car's. */
+  ordersOf(gig: GigRec): Ord[] {
+    const out: Ord[] = []
+    const first = this.orders.get(gig.orderId)
+    if (first) out.push(first)
+    const second = gig.pair ? this.orders.get(gig.pair.orderId) : undefined
+    if (second) out.push(second)
+    return out
+  }
+
+  /** The legs of one order that a gig carries. */
+  legsIn(gig: GigRec, orderId: string): number[] {
+    return gig.orderId === orderId ? gig.legs : gig.pair?.orderId === orderId ? [0] : []
+  }
+
   /** Posts a gig for every leg of the order that has none. */
   dispatch(ord: Ord): void {
     if (this.tradeGig(ord)) {
@@ -1132,8 +1245,153 @@ export class Desk {
     }
     ord.legs.forEach((state, leg) => {
       if (state.delivered || state.pickedUp || state.gigId !== null || this.now < state.retryAt) return
+      if (this.cfg.pairs && this.tryPair(ord)) return
       this.postLeg(ord, leg)
     })
+  }
+
+  // ---------------------------------------------------------------- two orders in one gig
+
+  /** Whether this order's car may share a gig with another order's car: one plain car, no trouble so far, no note that
+   * pins its hours, and it has not been in a pair that found no driver. */
+  pairable(ord: Ord): boolean {
+    if (!this.cfg.pairs || ord.order.legs.length !== 1 || ord.late || ord.urgent || ord.noPair || ord.drops > 0) return false
+    const leg = ord.order.legs[0]!
+    const state = ord.legs[0]!
+    if (state.delivered || state.pickedUp || state.failed.length > 0 || this.now < state.retryAt) return false
+    if (leg.car.premium || leg.pickup.privateAddress || leg.delivery.privateAddress) return false
+    const f = this.legFacts(ord.facts, 0)
+    return f.pickupOpens === null && f.pickupCloses === null && f.deliveryOpens === null && f.deliveryCloses === null && f.deadline === null && !f.summerTyres
+  }
+
+  /** One driver takes x's car and then y's, both on time and on one day: the latest start that does it, or null. */
+  pairPlan(x: Ord, y: Ord): { start: number; hop: number; drive: number; back: number } | null {
+    const cfg = this.cfg
+    const lx = x.order.legs[0]!
+    const ly = y.order.legs[0]!
+    const hop = roadMinutes(lx.delivery.placeId, ly.pickup.placeId)
+    if (hop > cfg.pairHop) return null
+    const dx = this.driveMinutes(lx, x.legs[0]!.plates)
+    const dy = this.driveMinutes(ly, y.legs[0]!.plates)
+    if (roadMinutes(lx.pickup.placeId, lx.delivery.placeId) + hop + roadMinutes(ly.pickup.placeId, ly.delivery.placeId) > cfg.pairDrive) return null
+    const fx = this.legFacts(x.facts, 0)
+    const fy = this.legFacts(y.facts, 0)
+    const earliestX = Math.max(this.now, lx.pickup.window.from, fx.readyAt ?? 0, x.legs[0]!.notBefore)
+    const earliestY = Math.max(this.now, ly.pickup.window.from, fy.readyAt ?? 0, y.legs[0]!.notBefore)
+    const lastX = this.lastPickup(lx, fx, earliestX, x.order.deadline)
+    if (lastX === null) return null
+    // y is collected `dx + hop` minutes after x.
+    const lastY = this.lastPickup(ly, fy, Math.max(earliestX + dx + hop, earliestY), y.order.deadline)
+    if (lastY === null) return null
+    let start = Math.min(lastX, lastY - dx - hop)
+    // x's own sites on the day of that start.
+    const day = Math.floor(start / DAY)
+    const pickup = openOn(lx.pickup, day, null, null)
+    const delivery = openOn(lx.delivery, day, null, null)
+    if (!pickup || !delivery) return null
+    start = Math.min(start, pickup[1], delivery[1] - dx)
+    if (start < Math.max(earliestX, pickup[0], delivery[0] - dx)) return null
+    const reach = start + dx + hop
+    const yard = openOn(ly.pickup, Math.floor(reach / DAY), null, null)
+    if (!yard || reach > yard[1] || Math.floor(reach / DAY) !== day || Math.floor((reach + dy) / DAY) !== day) return null
+    // The driver should not sit long at y's pickup.
+    if (Math.max(earliestY, yard[0]) - reach > cfg.pairIdle) return null
+    if (start - this.now < cfg.pairLead) return null
+    return { start, hop, drive: dx + hop + dy, back: roadMinutes(ly.delivery.placeId, lx.pickup.placeId) }
+  }
+
+  /** Looks for a second car to share a driver with this one, and posts the two as one gig. False: no partner. */
+  tryPair(ord: Ord): boolean {
+    if (!this.pairable(ord)) return false
+    let best: { other: Ord; gig: GigRec | null; first: Ord; second: Ord; score: number } | null = null
+    for (const other of this.orders.values()) {
+      if (other === ord || !this.pairable(other)) continue
+      const held = other.legs[0]!.gigId
+      let gig: GigRec | null = null
+      if (held !== null) {
+        if (held === "pending") continue
+        const rec = this.gigs.get(held)
+        if (!rec || rec.status !== "open" || rec.pair || rec.late) continue
+        gig = rec
+      }
+      for (const [first, second] of [[other, ord], [ord, other]] as [Ord, Ord][]) {
+        const plan = this.pairPlan(first, second)
+        if (!plan) continue
+        // A trip that ends where it began is the cheapest for a driver.
+        const score = plan.hop + Math.min(plan.back, 240) / 4
+        if (!best || score < best.score) best = { other, gig, first, second, score }
+      }
+    }
+    if (!best) return false
+    const { other, gig, first, second } = best
+    const mine = ord.legs[0]!
+    const theirs = other.legs[0]!
+    mine.gigId = "pending"
+    theirs.gigId = "pending"
+    if (!gig) {
+      this.postPair(first, second)
+      return true
+    }
+    // The other car's own gig leaves the app first.
+    gig.status = "gone"
+    this.push({ type: "withdraw", gigId: gig.id }, (result) => {
+      if (!result.ok) {
+        // A driver took the other car first, or the world expired its gig: this car goes on without it.
+        mine.gigId = null
+        if (gig.expired) {
+          theirs.gigId = null
+          this.dispatch(other)
+        } else {
+          gig.status = "booked"
+          theirs.gigId = gig.id
+        }
+        this.dispatch(ord)
+        return
+      }
+      this.postPair(first, second)
+    })
+    return true
+  }
+
+  /** One gig for two orders' cars: the first car out, then the second. */
+  postPair(first: Ord, second: Ord): void {
+    const cfg = this.cfg
+    const a = first.legs[0]!
+    const b = second.legs[0]!
+    const alone = (why: string) => {
+      a.gigId = b.gigId = null
+      first.noPair = second.noPair = true
+      this.journal.push({ t: this.now, what: "pair-refused", id: first.order.id, pair: second.order.id, reason: why })
+      this.dispatch(first)
+      this.dispatch(second)
+    }
+    const pa = this.plan(first, 0)
+    const pb = this.plan(second, 0)
+    if (!pa || !pb || pa.late || pb.late) return alone("no on-time plan")
+    const stops = [...pa.stops, ...pb.stops]
+    for (const stop of stops) if (stop.window && (stop.window.to <= stop.window.from || stop.window.to <= this.now)) delete stop.window
+    const sum = first.request.referenceFeeCents * first.refScale + second.request.referenceFeeCents * second.refScale
+    const schedule: FeeStep[] = [{ at: this.now, feeCents: Math.round(sum * cfg.pairFee) }]
+    if (cfg.pairFee2 > cfg.pairFee) schedule.push({ at: this.now + Math.round(cfg.pairWait / 2), feeCents: Math.round(sum * cfg.pairFee2) })
+    const post: PostAction = { type: "post", stops, audience: { experienced: false, manualLicence: a.manual || b.manual }, schedule }
+    a.gigId = b.gigId = "pending"
+    first.firstPostAt ??= this.now
+    second.firstPostAt ??= this.now
+    this.stats.posts++
+    this.push(post, (result) => {
+      if (!result.ok) return alone(result.reason)
+      a.gigId = b.gigId = result.id
+      this.gigs.set(result.id, { id: result.id, post, orderId: first.order.id, legs: [0], status: "open", driverId: null, postedAt: this.now, late: false, buffered: false, offered: new Set(), openOffers: 0, views: 0, pair: { orderId: second.order.id, until: this.now + cfg.pairWait } })
+      this.journal.push({ t: this.now, what: "post", gig: result.id, id: first.order.id, pair: second.order.id, leg: 0, late: false, urgent: false, stops, schedule, ref: Math.round(sum), feeMult: null, probe: null })
+    })
+  }
+
+  /** Ends a pair gig that no driver has booked: each car goes alone from now on. */
+  split(gig: GigRec, why: string): void {
+    if (!gig.pair || gig.status !== "open") return
+    for (const ord of this.ordersOf(gig)) ord.noPair = true
+    this.journal.push({ t: this.now, what: "split", gig: gig.id, id: gig.orderId, pair: gig.pair.orderId, why })
+    this.withdraw(gig)
   }
 
   /** Whether the two cars of a trade-in still go in one gig: neither has moved, no visit has failed, and the two
@@ -1266,15 +1524,20 @@ export class Desk {
     if (gig.status !== "open") return
     gig.status = "gone"
     const ord = this.orders.get(gig.orderId)
+    const second = gig.pair ? this.orders.get(gig.pair.orderId) : undefined
     this.push({ type: "withdraw", gigId: gig.id }, (result) => {
       if (!result.ok) {
-        // A driver took it first: it is booked after all.
+        // The world expired it first (it is gone, and onExpired posted the car again), or a driver took it first: it is booked after all.
+        if ((this.cfg.expiredRepost || gig.pair) && gig.expired) return
         gig.status = "booked"
         return
       }
-      if (!ord) return
-      for (const leg of gig.legs) if (ord.legs[leg]!.gigId === gig.id) ord.legs[leg]!.gigId = null
-      this.dispatch(ord)
+      if (second && second.legs[0]!.gigId === gig.id) second.legs[0]!.gigId = null
+      if (ord) {
+        for (const leg of gig.legs) if (ord.legs[leg]!.gigId === gig.id) ord.legs[leg]!.gigId = null
+        this.dispatch(ord)
+      }
+      if (second) this.dispatch(second)
     })
   }
 
@@ -1319,7 +1582,7 @@ export class Desk {
     const cfg = this.cfg
     const first = ord.order.legs[0]!
     const boost = (ord.order.legs.some((l) => l.pickup.privateAddress) ? cfg.privateFee : 1) * (first.car.premium ? cfg.premiumFee : 1)
-    const ref = this.refOf(ord.request, cfg.refLaneFee) * share * boost
+    const ref = this.refOf(ord.request, cfg.refLaneFee) * share * boost * ord.refScale
     const steps: FeeStep[] = []
     const add = (at: number, fee: number) => {
       const cents = Math.max(1, Math.round(fee), steps.at(-1)?.feeCents ?? 0)
@@ -1400,6 +1663,7 @@ export class Desk {
 
   reprice(gig: GigRec, ord: Ord): void {
     if (gig.status !== "open") return
+    if (gig.pair) return this.split(gig, ord.late ? "late" : "urgent")
     const schedule = this.schedule(ord, gig.legs.length / ord.order.legs.length)
     this.push({ type: "reprice", gigId: gig.id, schedule }, (result) => {
       if (!result.ok) return
@@ -1424,6 +1688,18 @@ export class Desk {
     gig.status = "open"
     gig.driverId = null
     gig.offered.add(driverId)
+    if (gig.pair) {
+      // The driver gave both cars back: each goes alone now.
+      for (const o of this.ordersOf(gig)) {
+        o.drops++
+        o.bookedAt = null
+        o.noPair = true
+        if (o.order.lastPickupAt - this.now < 3 * HOUR) o.urgent = true
+      }
+      this.journal.push({ t: this.now, what: kind, gig: gigId, id: gig.orderId, pair: gig.pair.orderId, driver: driverId })
+      this.withdraw(gig)
+      return
+    }
     const ord = this.orders.get(gig.orderId)
     if (!ord) return
     ord.drops++
@@ -1443,7 +1719,25 @@ export class Desk {
 
   onExpired(gigId: string): void {
     const gig = this.gigs.get(gigId)
-    if (!gig || gig.status === "gone") return
+    if (!gig) return
+    gig.expired = true
+    if (gig.pair) {
+      const was = gig.status
+      gig.status = "gone"
+      const owners = this.ordersOf(gig).filter((o) => o.legs[0]!.gigId === gigId)
+      for (const o of owners) {
+        o.noPair = true
+        o.expiries++
+        o.legs[0]!.gigId = null
+      }
+      if (owners.length > 0) this.journal.push({ t: this.now, what: "expired", gig: gigId, id: gig.orderId, pair: gig.pair.orderId, was })
+      for (const o of owners) this.dispatch(o)
+      return
+    }
+    // A withdrawal of this gig may be on its way (a seller's slot passed: the order changes and the gig expires in
+    // the same minute). The world will refuse it, and the car must not stay tied to a gig that no longer exists.
+    const held = this.cfg.expiredRepost && gig.legs.some((leg) => this.orders.get(gig.orderId)?.legs[leg]?.gigId === gigId)
+    if (gig.status === "gone" && !held) return
     gig.status = "gone"
     const ord = this.orders.get(gig.orderId)
     if (!ord) return
@@ -1471,7 +1765,8 @@ export class Desk {
       if (hours && ord.facts.pickupCloses === null) ord.facts = { ...ord.facts, pickupCloses: Math.min(hours.closes, (this.now % DAY) - 30) }
     } else state.notBefore = this.now + 2 * HOUR
     const gig = this.gigs.get(gigId)
-    if (gig && gig.legs.every((l) => ord.legs[l]!.gigId !== gigId)) gig.status = "done"
+    const goesOn = gig?.pair !== undefined && this.ordersOf(gig).some((o) => o.legs[0]!.gigId === gigId && !o.legs[0]!.delivered)
+    if (gig && !goesOn && this.legsIn(gig, orderId).every((l) => ord.legs[l]!.gigId !== gigId)) gig.status = "done"
     this.dispatch(ord)
   }
 
@@ -1484,7 +1779,8 @@ export class Desk {
       if (this.now > Math.min(ord.order.deadline, this.legFacts(ord.facts, leg).deadline ?? Infinity)) ord.lateKnown = true
     }
     if (gig) {
-      if (!ord || gig.legs.every((l) => ord.legs[l]!.delivered || ord.legs[l]!.gigId !== gigId)) {
+      const goesOn = gig.pair !== undefined && this.ordersOf(gig).some((o) => o.legs[0]!.gigId === gigId && !o.legs[0]!.delivered)
+      if (!goesOn && (!ord || this.legsIn(gig, orderId).every((l) => ord.legs[l]!.delivered || ord.legs[l]!.gigId !== gigId))) {
         gig.status = "done"
         if (gig.driverId) {
           this.lastAt.set(gig.driverId, { place: placeId, at: this.now })
@@ -1500,6 +1796,7 @@ export class Desk {
   round(): void {
     for (const ord of this.orders.values()) {
       if (ord.legs.every((l) => l.delivered)) continue
+      if (this.cfg.pairs) for (const gig of this.gigsOf(ord)) if (gig.pair && gig.status === "open" && (this.now >= gig.pair.until || ord.urgent || ord.late)) this.split(gig, this.now >= gig.pair.until ? "no driver" : "clock")
       // Once the last on-time pickup has passed, an open gig with windows can get no driver: post it open-ended.
       if (!ord.late && this.now > ord.order.lastPickupAt + 5) {
         const open = this.gigsOf(ord).filter((g) => g.status === "open" && !g.late)
@@ -1554,12 +1851,12 @@ export class Desk {
     const hour = Math.floor(minute / 60)
     const pool: { gig: GigRec; id: string; p: number; fee: number }[] = []
     for (const gig of this.gigs.values()) {
-      if (gig.status !== "open" || gig.openOffers >= 3) continue
+      if (gig.status !== "open" || gig.openOffers >= 3 || gig.pair) continue
       const ord = this.orders.get(gig.orderId)
       if (!ord || ord.firstPostAt === null || this.now - ord.firstPostAt < cfg.offerAge) continue
       const leg = ord.order.legs[gig.legs[0]!]!
       const first = gig.post.stops[0]!.window?.from ?? leg.pickup.window.from
-      if (first > this.now + 20 * HOUR) continue
+      if (first > this.now + this.cfg.offerAhead * HOUR) continue
       const share = gig.legs.length / ord.order.legs.length
       const fee = Math.round(this.feeNow(gig.post.schedule) * cfg.offerFee)
       const viewers = this.viewers.get(gig.orderId)
@@ -1613,13 +1910,13 @@ export class Desk {
     const pool: { gig: GigRec; id: string; score: number; fee: number }[] = []
     const send = (gig: GigRec, id: string, score: number, fee: number) => this.#offer(gig, id, score, fee)
     for (const gig of this.gigs.values()) {
-      if (gig.status !== "open" || gig.openOffers >= 3) continue
+      if (gig.status !== "open" || gig.openOffers >= 3 || gig.pair) continue
       const ord = this.orders.get(gig.orderId)
       if (!ord) continue
       const leg = ord.order.legs[gig.legs[0]!]!
       const first = gig.post.stops[0]!.window?.from ?? leg.pickup.window.from
       // Offers last ten minutes: only for pickups that a driver could plan from now.
-      if (first > this.now + 20 * HOUR) continue
+      if (first > this.now + this.cfg.offerAhead * HOUR) continue
       const fee = Math.round(this.feeNow(gig.post.schedule) * this.cfg.offerFee)
       const scored: { id: string; score: number }[] = []
       for (const d of this.roster.drivers.values()) {
