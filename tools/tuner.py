@@ -8,15 +8,17 @@ has to survive three stages, each on the extra practice teams' keys (.keys), all
   3. 80 fresh worlds (h1-h80), with the lane table built from other worlds (lanes-usual.json): accepted when ahead on
      the fresh worlds alone (t >= 2), ahead over all 120 (t >= 2.5), every world ranked, and the on-time share not
      worse than the floor (lowest world 92%, mean no more than 0.3 points under the base).
-Accepted changes are merged; the merged config is played on all 120 worlds and becomes the next base when it holds,
-else the best single change does. A round that accepts nothing changes the step size (x2, then x0.5); three such
-rounds in a row end the run. The base is written to bot/sweeps/tuned.json after every round, and each round's config
+Each round also tries combinations of several knobs at once: the single changes that looked good so far are the pool,
+and the best few together plus random sets of 2 to 6 of them go through the same stages. The best change that passes
+(changes that pass are merged when the merge holds on all 120) gets a last check on 80 new worlds that no choice was
+made on; only then does it become the next base. A round that finds nothing changes the step size (x2, then x0.5);
+eight such rounds in a row end the run. The base is written to bot/sweeps/tuned.json after every round, and each round's config
 to bot/sweeps/tuned-r<n>.json. Decisions go to data/logs/tuner.log.
 
 No world is played near a final or a test final (the windows below, UTC); a stage that would run into one waits, and
 a stage caught by one is stopped and played again afterwards. A file data/tuner.stop ends the run after the current
 stage; data/tuner.pause holds it between stages. Trial weeks are saved compressed (data/runs-gz)."""
-import sys, os, json, math, time, copy, signal, subprocess, datetime
+import sys, os, json, math, time, copy, signal, random, subprocess, datetime
 
 R = '/mnt/data/trevor/spread'
 BOT = R + '/bot'
@@ -27,7 +29,7 @@ S1 = [f's{i}' for i in range(1, 9)] + [f'm{i}' for i in range(1, 8)] + ['m11']
 S2 = [f't{i}' for i in range(1, 25)]
 S3 = [f'h{i}' for i in range(1, 81)]
 WINDOWS = [(202611141115, 202611141245), (202611141715, 202611141845), (202611150515, 202611150645)]
-RATE = 2.0  # worlds a second over all keys, as measured; only for the estimate of a stage's length
+RATE = 3.5  # worlds a second over all keys, as measured; only for the estimate of a stage's length
 LOG = R + '/data/logs/tuner.log'
 STATE = R + '/data/tuner.state.json'
 STOP = R + '/data/tuner.stop'
@@ -77,14 +79,14 @@ KNOBS = [
 
 
 def log(text):
-    line = f"{datetime.datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')} {text}"
+    line = f"{datetime.datetime.now(datetime.timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')} {text}"
     print(line, flush=True)
     with open(LOG, 'a') as f:
         f.write(line + '\n')
 
 
 def blocked(ahead=0.0):
-    at = int((datetime.datetime.utcnow() + datetime.timedelta(minutes=ahead)).strftime('%Y%m%d%H%M'))
+    at = int((datetime.datetime.now(datetime.timezone.utc) + datetime.timedelta(minutes=ahead)).strftime('%Y%m%d%H%M'))
     return any(a <= at <= b for a, b in WINDOWS)
 
 
@@ -173,14 +175,23 @@ def play(name, variants, seeds):
                 sys.exit(0)
             time.sleep(30)
         ks = keys()
-        k = min(len(ks), len(seeds))
+        tags = list(variants)
+        os.makedirs(R + '/data/tuner', exist_ok=True)
+        # The work is dealt evenly: by variants when there are as many as keys (each key plays its variants on every
+        # world), else by worlds.
+        if len(tags) >= len(ks):
+            k = len(ks)
+            shares = [({t: variants[t] for t in tags[i::k]}, seeds) for i in range(k)]
+        else:
+            k = min(len(ks), len(seeds))
+            shares = [(variants, seeds[i::k]) for i in range(k)]
         started = time.time()
         procs = []
-        for i in range(k):
-            share = ','.join(seeds[i::k])
+        for i, (part, worlds) in enumerate(shares):
+            json.dump(part, open(f'{R}/data/tuner/{name}-k{i}.json', 'w'))
             # The key travels in the environment only: never on a command line, never into a log.
             env = {**os.environ, 'SPREAD_URL': URL, 'SPREAD_KEY': ks[i][1], 'SPREAD_GZ': '1'}
-            cmd = f"{NODE} worlds.ts --clean > /dev/null 2>&1; exec {NODE} sweep.ts --seeds {share} --variants @sweeps/{name}.json"
+            cmd = f"{NODE} worlds.ts --clean > /dev/null 2>&1; exec {NODE} sweep.ts --seeds {','.join(worlds)} --variants @../data/tuner/{name}-k{i}.json"
             procs.append(subprocess.Popen(PREFIX + ['bash', '-c', cmd], cwd=BOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
         KIDS[:] = procs
         cut = False
@@ -203,29 +214,42 @@ def play(name, variants, seeds):
 
 
 def stage(name, variants, seeds):
-    """Plays a stage; weeks that failed (the network) are played once more."""
-    play(name, variants, seeds)
-    res = results(list(variants))
-    missing = {t: [s for s in seeds if s not in res[t]] for t in variants}
-    again = {t: variants[t] for t in variants if missing[t]}
-    if again:
-        lost = sorted({s for t in again for s in missing[t]})
-        log(f'   {name}: {sum(len(v) for v in missing.values())} weeks missing; played again')
-        play(name + 'b', again, lost)
+    """Plays what a stage still lacks: weeks already in the results (a resumed round) are not played again, and weeks
+    that failed (the network) are played up to twice more."""
+    for attempt in ('', 'b', 'c'):
+        res = results(list(variants))
+        missing = {t: [s for s in seeds if s not in res[t]] for t in variants}
+        todo = {t: variants[t] for t in variants if missing[t]}
+        if not todo:
+            break
+        lost = [s for s in seeds if any(s in missing[t] for t in todo)]
+        count = sum(len(v) for v in missing.values())
+        if attempt or count < len(variants) * len(seeds):
+            log(f'   {name}{attempt}: {count} of {len(variants) * len(seeds)} weeks still to play')
+        play(name + attempt, todo, lost)
     return results(list(variants))
 
 
 def table(rows):
     for label, a, o in rows:
-        log(f"      {label:34s} n {a['n']:3d}  diff {a['mean'] / 100:+8.0f}  se {a['se'] / 100:5.0f}  t {a['t']:+5.1f}   on time {o['mean']:.1f} low {o['low']:.1f}{'' if o['ranked'] else '  UNRANKED'}")
+        log(f"      {label:34s} n {a['n']:3d}  diff {a['mean']:+8.0f}  se {a['se']:5.0f}  t {a['t']:+5.1f}   on time {o['mean']:.1f} low {o['low']:.1f}{'' if o['ranked'] else '  UNRANKED'}")
+
+
+COMBOS = 48  # combinations of several knobs tried a round
+DRY = 8  # rounds in a row without a new base before the run ends
+
+
+def short(tag):
+    return tag.split('-', 1)[1]
 
 
 def main():
     signal.signal(signal.SIGTERM, ended)
     state = json.load(open(STATE)) if os.path.exists(STATE) else None
     if state and len(sys.argv) < 2:
-        base, rnd, scale, dry = state['base'], state['round'], state['scale'], state['dry']
-        log(f'resumed after round {rnd}')
+        # A round that was cut is played again under its own number: its tags are the same, so its weeks are reused.
+        base, rnd, scale, dry = state['base'], state['round'] - (0 if state.get('done') else 1), state['scale'], state['dry']
+        log(f'resumed: round {rnd + 1} is next')
     else:
         base, rnd, scale, dry = json.load(open(sys.argv[1])), (state['round'] if state else 0), 1.0, 0
         log(f'started from {sys.argv[1]}')
@@ -233,13 +257,27 @@ def main():
     if len(sys.argv) > 2:
         wanted = set(json.load(open(sys.argv[2])))
         knobs = [k for k in KNOBS if k[0] in wanted]
-    while dry < 3:
+    usual = S1 + S2
+    fresh = lambda cfg: {**cfg, 'lanesFile': 'lanes-usual.json'}
+    clean = lambda cfg: {k: v for k, v in cfg.items() if k != 'lanesFile'}
+    while dry < DRY:
         if os.path.exists(STOP):
             log('stop asked: ending')
             return
         rnd += 1
-        json.dump(dict(base=base, round=rnd, scale=scale, dry=dry), open(STATE, 'w'))
+        json.dump(dict(base=base, round=rnd, scale=scale, dry=dry, done=False), open(STATE, 'w'))
         P = f'tn{rnd}'
+        B = f'{P}-base'
+        BU = f'{B}-u'
+
+        def nothing(why):
+            nonlocal dry, scale
+            log(f'   round {rnd}: {why}')
+            dry += 1
+            scale = 2.0 if scale == 1.0 else 0.5 if scale == 2.0 else 1.0
+            json.dump(dict(base=base, round=rnd, scale=scale, dry=dry, done=True), open(STATE, 'w'))
+
+        # One knob at a time: every knob a step up and a step down.
         cands = {}
         for key, how, step, lo, hi, whole in knobs:
             value = get(base, key)
@@ -250,50 +288,100 @@ def main():
                 if new == value:
                     continue
                 tag = f"{P}-{key.replace('market.', 'mk.').replace('startFallbackDay.4', 'fri')}{'-up' if direction > 0 else '-dn'}"
-                cands[tag] = dict(key=key, value=new, cfg=put(base, key, new))
-        log(f'round {rnd}: {len(cands)} changes around the base, step x{scale}')
-        B = f'{P}-base'
-        # Stage 1: 16 usual worlds.
-        res = stage(f'{P}-a', {B: base, **{t: c['cfg'] for t, c in cands.items()}}, S1)
-        keep = []
-        for t in cands:
-            a = paired(res, t, B, S1)
-            o = ontime(res, t, S1)
-            if a['n'] >= 12 and a['mean'] > -0.5 * a['se'] and o['ranked']:
-                keep.append(t)
-        log(f'   stage 1: {len(keep)} of {len(cands)} go on')
-        if not keep:
-            dry += 1
-            scale = 2.0 if scale == 1.0 else 0.5 if scale == 2.0 else 1.0
+                cands[tag] = dict(changes=[(key, new)], cfg=put(base, key, new))
+        singles = list(cands)
+        label = lambda t: ', '.join(f'{k} = {v}' for k, v in cands[t]['changes'])
+        log(f'round {rnd}: {len(singles)} single changes around the base, step x{scale}')
+
+        def first16(res, tags, least):
+            out = []
+            for t in tags:
+                a = paired(res, t, B, S1)
+                if a['n'] >= 12 and a['mean'] > least * a['se'] and ontime(res, t, S1)['ranked']:
+                    out.append(t)
+            return out
+
+        def over40(res, tags, top):
+            out = []
+            for t in tags:
+                a = paired(res, t, B, usual)
+                o = ontime(res, t, usual)
+                if a['n'] >= 32 and a['t'] >= 1.0 and o['ranked'] and o['low'] >= FLOOR - 1:
+                    out.append(t)
+            out.sort(key=lambda t: -paired(res, t, B, usual)['t'])
+            return out[:top]
+
+        # Stage 1: 16 usual worlds. Stage 2: the other 24 for those not clearly worse (the base plays all 40).
+        res = stage(f'{P}-a', {B: base, **{t: cands[t]['cfg'] for t in singles}}, S1)
+        keep = first16(res, singles, -0.5)
+        log(f'   singles, 16 worlds: {len(keep)} of {len(singles)} go on')
+        stage(f'{P}-b', {B: base, **{t: cands[t]['cfg'] for t in keep}}, S2)
+        res = results([B] + singles)
+        keep2 = over40(res, keep, 8)
+        log(f'   singles, 40 worlds: {len(keep2)} of {len(keep)} go on')
+        table([(label(t), paired(res, t, B, usual), ontime(res, t, usual)) for t in keep2])
+
+        # Several knobs at once: the single changes that looked good so far (one direction a knob) are the pool;
+        # the best few together, and random sets of 2 to 6 drawn by how good each looked.
+        score = {t: paired(res, t, B, usual) for t in singles}
+        pool, seen = [], set()
+        for t in sorted(singles, key=lambda t: -score[t]['t']):
+            key = cands[t]['changes'][0][0]
+            if score[t]['n'] >= 12 and score[t]['t'] >= 0.3 and key not in seen and ontime(res, t, usual)['ranked']:
+                seen.add(key)
+                pool.append(t)
+        pool = pool[:24]
+        log('   pool for combinations: ' + ', '.join(f"{short(t)} ({score[t]['t']:+.1f})" for t in pool))
+        rng = random.Random(1000 + rnd)
+        combos, made = {}, set()
+
+        def add(members, name):
+            sig = frozenset(members)
+            if sig in made:
+                return
+            made.add(sig)
+            cfg, changes = base, []
+            for t in members:
+                k, v = cands[t]['changes'][0]
+                cfg = put(cfg, k, v)
+                changes.append((k, v))
+            combos[f'{P}-{name}'] = dict(changes=changes, cfg=cfg)
+
+        for n in (2, 3, 4, 6, 8, 12):
+            if len(pool) >= n:
+                add(pool[:n], f'top{n}')
+        tries = 0
+        while len(combos) < COMBOS and tries < 5000 and len(pool) >= 2:
+            tries += 1
+            left, members = list(pool), []
+            for _ in range(min(len(pool), rng.choice((2, 2, 3, 3, 4, 5, 6)))):
+                pick = rng.choices(left, weights=[max(score[t]['t'], 0.3) for t in left])[0]
+                left.remove(pick)
+                members.append(pick)
+            add(sorted(members, key=pool.index), f'x{len(combos) + 1}')
+        keepx = []
+        if combos:
+            cands.update(combos)
+            res = stage(f'{P}-x', {B: base, **{t: c['cfg'] for t, c in combos.items()}}, S1)
+            first = first16(res, list(combos), 0.0)
+            log(f'   combinations, 16 worlds: {len(first)} of {len(combos)} go on')
+            stage(f'{P}-y', {B: base, **{t: combos[t]['cfg'] for t in first}}, S2)
+            res = results([B] + list(cands))
+            keepx = over40(res, first, 10)
+            log(f'   combinations, 40 worlds: {len(keepx)} of {len(first)} go on')
+            table([(label(t)[:60], paired(res, t, B, usual), ontime(res, t, usual)) for t in keepx])
+        short_list = keep2 + keepx
+        if not short_list:
+            nothing('nothing is ahead over the 40 usual worlds')
             continue
-        # Stage 2: the other 24 usual worlds.
-        res = stage(f'{P}-b', {B: base, **{t: cands[t]['cfg'] for t in keep}}, S2)
-        res = results([B] + keep)
-        usual = S1 + S2
-        keep2 = []
-        for t in keep:
-            a = paired(res, t, B, usual)
-            o = ontime(res, t, usual)
-            if a['n'] >= 32 and a['t'] >= 1.0 and o['ranked'] and o['low'] >= FLOOR - 1:
-                keep2.append(t)
-        keep2.sort(key=lambda t: -paired(res, t, B, usual)['t'])
-        keep2 = keep2[:14]
-        log(f'   stage 2: {len(keep2)} of {len(keep)} go on')
-        table([(f"{t} = {cands[t]['value']}", paired(res, t, B, usual), ontime(res, t, usual)) for t in keep2])
-        if not keep2:
-            dry += 1
-            scale = 2.0 if scale == 1.0 else 0.5 if scale == 2.0 else 1.0
-            continue
+
         # Stage 3: 80 fresh worlds, with the lane table built from other worlds.
-        fresh = lambda cfg: {**cfg, 'lanesFile': 'lanes-usual.json'}
-        BU = f'{B}-u'
-        stage(f'{P}-c', {BU: fresh(base), **{f'{t}-u': fresh(cands[t]['cfg']) for t in keep2}}, S3)
-        res = results([B, BU] + keep2 + [f'{t}-u' for t in keep2])
+        stage(f'{P}-c', {BU: fresh(base), **{f'{t}-u': fresh(cands[t]['cfg']) for t in short_list}}, S3)
+        res = results([B, BU] + short_list + [f'{t}-u' for t in short_list])
         base_usual, base_fresh = ontime(res, B, usual), ontime(res, BU, S3)
 
         def verdict(t, tu):
             f = paired(res, tu, BU, S3)
-            u = paired(res, t, B, usual)
             d = [res[t][s][0] - res[B][s][0] for s in usual if s in res[t] and s in res[B]] + [res[tu][s][0] - res[BU][s][0] for s in S3 if s in res[tu] and s in res[BU]]
             n = len(d)
             mean = sum(d) / max(1, n)
@@ -304,46 +392,55 @@ def main():
             return ok, dict(n=n, mean=mean, se=se, t=mean / se), f, of
 
         accepted = []
-        for t in keep2:
+        for t in short_list:
             ok, allw, f, of = verdict(t, f'{t}-u')
-            log(f"      {t} = {cands[t]['value']}: fresh {f['mean'] / 100:+.0f} (t {f['t']:+.1f}), all 120 {allw['mean'] / 100:+.0f} (t {allw['t']:+.1f}), fresh on time {of['mean']:.1f} low {of['low']:.1f} -> {'ACCEPTED' if ok else 'no'}")
+            log(f"      {short(t)} [{label(t)[:90]}]: fresh {f['mean']:+.0f} (t {f['t']:+.1f}), all 120 {allw['mean']:+.0f} (t {allw['t']:+.1f}), fresh on time {of['mean']:.1f} low {of['low']:.1f} -> {'passes' if ok else 'no'}")
             if ok:
-                accepted.append((allw['t'], t))
+                accepted.append((allw['mean'] - allw['se'], t))
         if not accepted:
-            log(f'   round {rnd}: nothing accepted')
-            dry += 1
-            scale = 2.0 if scale == 1.0 else 0.5 if scale == 2.0 else 1.0
+            nothing('nothing holds on the fresh worlds')
             continue
         accepted.sort(reverse=True)
         best = accepted[0][1]
         new = cands[best]['cfg']
         if len(accepted) > 1:
-            merged = base
-            seen = set()
+            merged, seen = base, set()
             for _, t in accepted:
-                if cands[t]['key'] not in seen:
-                    seen.add(cands[t]['key'])
-                    merged = put(merged, cands[t]['key'], cands[t]['value'])
-            M = f'{P}-merged'
-            stage(f'{P}-d', {M: merged}, usual)
-            stage(f'{P}-e', {f'{M}-u': fresh(merged)}, S3)
-            res = results([B, BU, M, f'{M}-u', best, f'{best}-u'])
-            ok, allw, f, of = verdict(M, f'{M}-u')
-            _, single, _, _ = verdict(best, f'{best}-u')
-            log(f"      merged ({', '.join(t for _, t in accepted)}): fresh {f['mean'] / 100:+.0f} (t {f['t']:+.1f}), all 120 {allw['mean'] / 100:+.0f} (t {allw['t']:+.1f}), fresh on time {of['mean']:.1f} low {of['low']:.1f}; best single all 120 {single['mean'] / 100:+.0f}")
-            if ok and allw['mean'] >= single['mean'] - single['se']:
-                new = merged
-                log('   the merged config is the new base')
-            else:
-                log(f'   the merged config does not hold: {best} alone is the new base')
-        else:
-            log(f'   {best} is the new base')
-        base = {k: v for k, v in new.items() if k != 'lanesFile'}
+                for k, v in cands[t]['changes']:
+                    if k not in seen:
+                        seen.add(k)
+                        merged = put(merged, k, v)
+            if merged != new:
+                M = f'{P}-merged'
+                stage(f'{P}-d', {M: merged}, usual)
+                stage(f'{P}-e', {f'{M}-u': fresh(merged)}, S3)
+                res = results([B, BU, M, f'{M}-u', best, f'{best}-u'])
+                ok, allw, f, of = verdict(M, f'{M}-u')
+                _, single, _, _ = verdict(best, f'{best}-u')
+                log(f"      merged ({', '.join(short(t) for _, t in accepted)}): fresh {f['mean']:+.0f} (t {f['t']:+.1f}), all 120 {allw['mean']:+.0f} (t {allw['t']:+.1f}), fresh on time {of['mean']:.1f} low {of['low']:.1f}; the best alone, all 120: {single['mean']:+.0f}")
+                if ok and allw['mean'] >= single['mean'] - single['se']:
+                    new = merged
+                    log('   the merged config goes to the last check')
+        new = clean(new)
+
+        # The last check: 80 worlds that no choice was made on (new ones every round), the release's own lane table.
+        hold = [f'v{rnd}n{i}' for i in range(1, 81)]
+        HB, HN = f'{P}-hold-base', f'{P}-hold-new'
+        stage(f'{P}-h', {HB: base, HN: new}, hold)
+        res = results([HB, HN])
+        h, hn, hb = paired(res, HN, HB, hold), ontime(res, HN, hold), ontime(res, HB, hold)
+        good = h['n'] >= 70 and h['t'] >= 1.5 and hn['ranked'] and hn['low'] >= FLOOR - 1 and hn['mean'] >= hb['mean'] - 0.3
+        changed = {k: (base.get(k), new.get(k)) for k in new if new.get(k) != base.get(k)}
+        log(f"   last check on new worlds: {h['mean']:+.0f} se {h['se']:.0f} (t {h['t']:+.1f}), on time {hn['mean']:.1f} (base {hb['mean']:.1f}) low {hn['low']:.1f} -> {'NEW BASE' if good else 'not kept'}: {json.dumps(changed)[:400]}")
+        if not good:
+            nothing('the best change did not hold on new worlds')
+            continue
+        base = new
         json.dump(base, open(f'{BOT}/sweeps/tuned.json', 'w'), indent=1)
         json.dump(base, open(f'{BOT}/sweeps/tuned-r{rnd}.json', 'w'), indent=1)
         dry, scale = 0, 1.0
-        json.dump(dict(base=base, round=rnd, scale=scale, dry=dry), open(STATE, 'w'))
-    log('three rounds in a row accepted nothing: ended')
+        json.dump(dict(base=base, round=rnd, scale=scale, dry=dry, done=True), open(STATE, 'w'))
+    log(f'{DRY} rounds in a row found nothing: ended')
 
 
 if __name__ == '__main__':
