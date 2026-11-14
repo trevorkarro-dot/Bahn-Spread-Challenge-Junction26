@@ -248,6 +248,10 @@ export type Config = {
   pairFee: number
   pairFee2: number
   pairWait: number
+  /** Fee steps of a two-car gig as shares of the two typical fees, spread evenly over `pairWait`; empty: `pairFee`, then `pairFee2`. */
+  pairRamp: number[]
+  /** Taken off a request's cost, as a share of its typical fee, when one of our open orders could share a driver with it. */
+  pairQuote: number
   // --- practice clock ---
   tick: number
   wakeOnWin: boolean
@@ -374,6 +378,8 @@ export const DEFAULTS: Config = {
   pairFee: 0.75,
   pairFee2: 0,
   pairWait: 60,
+  pairRamp: [],
+  pairQuote: 0,
   tick: 10,
   wakeOnWin: false,
   playFrom: 0,
@@ -977,7 +983,9 @@ export class Desk {
       const optionLane: Lane = cfg.marketTags ? { ...lane, tags: [band, skipped ? "skip" : option.kind] } : skipped && (cfg.skipShift !== 0 || cfg.skipReach < 1) ? { ...lane, ...(cfg.skipShift !== 0 ? { shift: cfg.skipShift } : {}), ...(cfg.skipReach < 1 ? { reach: cfg.skipReach } : {}) } : lane
       lanes[option.kind] = optionLane
       const x = feats[option.kind]!
-      const k = cfg.feeModel ? Math.max(0.6, dot(cfg.feeModel, x)) : cfg.feeK + (option.kind === "same_day" ? cfg.costSameDay : 0) + (priv ? cfg.costPrivate : 0) + (leg.car.premium ? cfg.costPremium : 0) + (hasFact ? cfg.costNote : 0) + (back ? cfg.costTrade : 0) + (cfg.costStart > 0 && cfg.startModel ? cfg.costStart * (this.startPlan(x, this.now).expect - cfg.costStartMean) : 0)
+      const partner = cfg.pairs && cfg.pairQuote > 0 && !back ? this.partnerFor(request, facts, option.deadline) : null
+      if (partner) detail[`pair_${option.kind}`] = partner.order.id
+      const k = cfg.feeModel ? Math.max(0.6, dot(cfg.feeModel, x)) : cfg.feeK - (partner ? cfg.pairQuote : 0) + (option.kind === "same_day" ? cfg.costSameDay : 0) + (priv ? cfg.costPrivate : 0) + (leg.car.premium ? cfg.costPremium : 0) + (hasFact ? cfg.costNote : 0) + (back ? cfg.costTrade : 0) + (cfg.costStart > 0 && cfg.startModel ? cfg.costStart * (this.startPlan(x, this.now).expect - cfg.costStartMean) : 0)
       const pLate = back && cfg.tradeLate !== null ? cfg.tradeLate : cfg.lateModel ? 1 / (1 + Math.exp(-dot(cfg.lateModel, x))) : 0
       detail[`late_${option.kind}`] = Math.round(pLate * 1000) / 1000
       lates[option.kind] = pLate
@@ -1264,6 +1272,34 @@ export class Desk {
     return f.pickupOpens === null && f.pickupCloses === null && f.deliveryOpens === null && f.deliveryCloses === null && f.deadline === null && !f.summerTyres
   }
 
+  /** An open order of ours that could share a driver with this request, were it won with this deadline; null: none. */
+  partnerFor(request: PriceRequest, facts: Facts, deadline: number): Ord | null {
+    if (request.legs.length !== 1) return null
+    const f = this.legFacts(facts, 0)
+    const mock = {
+      order: { id: request.id, legs: request.legs, deadline },
+      request,
+      facts,
+      legs: [{ gigId: null, pickedUp: false, delivered: false, notBefore: 0, manual: f.manual, plates: f.plates, failed: [], retryAt: 0 }],
+      urgent: false,
+      late: false,
+      noPair: false,
+      drops: 0,
+    } as unknown as Ord
+    if (!this.pairable(mock)) return null
+    for (const other of this.orders.values()) {
+      if (!this.pairable(other)) continue
+      const held = other.legs[0]!.gigId
+      if (held !== null) {
+        if (held === "pending") continue
+        const rec = this.gigs.get(held)
+        if (!rec || rec.status !== "open" || rec.pair || rec.late) continue
+      }
+      if (this.pairPlan(other, mock) || this.pairPlan(mock, other)) return other
+    }
+    return null
+  }
+
   /** One driver takes x's car and then y's, both on time and on one day: the latest start that does it, or null. */
   pairPlan(x: Ord, y: Ord): { start: number; hop: number; drive: number; back: number } | null {
     const cfg = this.cfg
@@ -1371,8 +1407,8 @@ export class Desk {
     const stops = [...pa.stops, ...pb.stops]
     for (const stop of stops) if (stop.window && (stop.window.to <= stop.window.from || stop.window.to <= this.now)) delete stop.window
     const sum = first.request.referenceFeeCents * first.refScale + second.request.referenceFeeCents * second.refScale
-    const schedule: FeeStep[] = [{ at: this.now, feeCents: Math.round(sum * cfg.pairFee) }]
-    if (cfg.pairFee2 > cfg.pairFee) schedule.push({ at: this.now + Math.round(cfg.pairWait / 2), feeCents: Math.round(sum * cfg.pairFee2) })
+    const shares = cfg.pairRamp.length > 0 ? cfg.pairRamp : cfg.pairFee2 > cfg.pairFee ? [cfg.pairFee, cfg.pairFee2] : [cfg.pairFee]
+    const schedule: FeeStep[] = shares.map((share, i) => ({ at: this.now + Math.round((i * cfg.pairWait) / shares.length), feeCents: Math.round(sum * share) }))
     const post: PostAction = { type: "post", stops, audience: { experienced: false, manualLicence: a.manual || b.manual }, schedule }
     a.gigId = b.gigId = "pending"
     first.firstPostAt ??= this.now

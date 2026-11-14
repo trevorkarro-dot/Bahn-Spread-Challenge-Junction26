@@ -1,0 +1,14 @@
+{
+ "p8-k110": {
+  "feeK": 1.1
+ },
+ "p8-k105": {
+  "feeK": 1.05
+ },
+ "p8-l20": {
+  "lambdaPerOpen": 20
+ },
+ "p8-l15": {
+  "lambdaPerOpen": 15
+ }
+}

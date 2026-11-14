@@ -1,0 +1,14 @@
+{
+ "p8-d240": {
+  "pairDrive": 240
+ },
+ "p8-d360": {
+  "pairDrive": 360
+ },
+ "p8-idle120": {
+  "pairIdle": 120
+ },
+ "p8-idle30": {
+  "pairIdle": 30
+ }
+}

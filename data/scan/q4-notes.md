@@ -1,6 +1,6 @@
 # q4 notes (slot 4): offer model, on-time guard, slack - confirming k4 leads on never-used worlds
 
-Last rewrite: 15:55 UTC, 14 Nov. All changes are on top of bot/sweeps/cand6.json.
+Last rewrite: 16:07 UTC (FINAL: all sweeps of slot 4 are done, none running), 14 Nov. All changes are on top of bot/sweeps/cand6.json.
 Rate measured: 47 worlds a minute (q4a 200 runs in 255 s, q4b 400 in 506 s, q4c 480 in 626 s), 59 a minute at 15:40 (q4d 160 in 163 s).
 Time lost: about 75 minutes between 14:22 and 15:38 UTC when this tester was cut off mid-answer; no sweep ran in slot 4 in that time.
 
@@ -21,6 +21,7 @@ Time lost: about 75 minutes between 14:22 and 15:38 UTC when this tester was cut
 - q4-s180: {"minSlack": 180}
 - q4-ls7: {"lateShadow": 7000}
 - q4-ds480-db105: {"dropSafe": 480, "dropBump": 1.05}
+- q4-ma300-u: {"minAwake": 300} built with --fresh; q4-ma360-u: {"minAwake": 360} built with --fresh
 
 ## Stage C: y1-y120 (sweeps q4a y1-40, q4b y41-120), base hy-c6 (mean 19056, lowest on-time 92.5 y80, under 93: 1)
 cmp.py --low --only=y hy-c6 q4-  (n, mean, diff, se, t, up, worst, min, ontime, minOT):
@@ -60,8 +61,40 @@ cmp.py --low --only=y hy-c6 q4- :
 Read: minAwake 300 and dropSafe 480 / dropBump 1.05 are ahead at t 1.1-1.3 on y (first look, 10 q4 variants now seen on y, so partly luck); ma300 lowers the weakest world to 91.3.
 minSlack 180 and ctrlPow 5 lift the weakest y world by 0.5-0.6 (no world under 93) at +6 / -33.
 
-## Running
-### q4f (stage D, x1-x120), started 15:54 UTC: q4-ma300, q4-ds480-db105, q4-s180, q4-cp5 (in this order), base ho-om-pp110-top2. The last sweep of this slot.
+## q4f: the same singles on x (stage D, x1-x120, 118 paired), base ho-om-pp110-top2 (lowest on-time 92.4 x79, under 93: 2); 480 runs in 432 s
+cmp.py --low --only=x ho-om-pp110-top2 q4- :
+- q4-ma300        118  18752   +42  77  +0.5  57/118  -1723  11354  97.1  92.3 (x20)  under 93: 2   won 435.1
+- q4-ds480-db105  118  18659   -51  70  -0.7  60/118  -2114  10863  97.0  91.4 (x48)  under 93: 3   won 440.1
+- q4-s180         118  18616   -93  70  -1.3  55/118  -2245  10439  97.0  92.3 (x42)  under 93: 4   won 440.3
+- q4-cp5          118  18554  -156  78  -2.0  50/118  -3497  11261  97.0  91.6 (x22)  under 93: 2   won 446.5
+Read: ds480-db105 does not repeat (y +77, x -51). The two that lifted the weakest y world do not lift on x and cost margin there (s180 -93, cp5 -156 at t -2.0): no lift of the weakest worlds found.
+minAwake 300 is the only variant of the slot ahead on both never-used sets (y +91 t 1.3, x +42 t 0.5), on-time share up 0.1-0.2, lowest on-time y 91.3 (base 92.5) / x 92.3 (base 92.4). Not at t 1.5 on either set.
 
-## Next
-- Read q4f (about 16:04) and write the report (due 16:22). No further sweeps.
+## q4g: minAwake on the fresh worlds (stage F, h1-h80, --fresh), base w5-om-pp110-top2-u (lowest on-time 92.7 h24, under 93: 1); 160 runs in 166 s
+cmp.py --low --only=h w5-om-pp110-top2-u q4- :
+- q4-ma300-u  80  18571    -8  91  -0.1  41/80  -3062  8119  97.2  91.8 (h65)  under 93: 1   won 435.6
+- q4-ma360-u  80  18425  -154  93  -1.7  26/80  -2674  7915  97.4  93.5 (h24)  under 93: 0   won 430.4
+
+## q4h: q4-ma300 on the 40 usual worlds (s,m,t), base w5-om-pp110-top2 (lowest on-time 94.7); 40 runs in 44 s, ended 16:04:31
+cmp.py --low --only=s,m,t w5-om-pp110-top2 q4- :
+- q4-ma300  40  18303  -208  142  -1.5  19/40  -3065  12480  97.3  93.8 (t23)  under 93: 0   won 437.4
+
+## FINAL CONCLUSIONS (slot 4)
+1. None of the five k4 leads repeats on never-used worlds. Nothing of this theme is worth releasing; cand6 stays.
+   - om1-of105: usual(k4) +250 t 2.2 | y +94 t 1.4 | x -4 t -0.0 | fresh -28 t -0.4
+   - om2-of105: usual(k4) +322 t 2.6 | y +44 t 0.6 | x +16 t 0.2 | fresh -14 t -0.1
+   - b40-s120:  usual(k4) +184 t 1.8 | y +47 t 0.8 | x -13 t -0.2 ; lowest on-time y 91.6 (base 92.5)
+   - b40-s90:   usual(k4) +215 t 2.6 | y +38 t 0.6 | x -29 t -0.5 ; lowest on-time y 91.6 (base 92.5)
+   - u4-ls7:    usual(k4) +308 t 2.6 | y +16 t 0.2 | x not played
+2. Singles tried after that (first on y, then on x):
+   - ma300 (minAwake 300): y +91 t 1.3 | x +42 t 0.5 | fresh -8 t -0.1 | usual -208 t -1.5 : not a result; fewer orders won (435-438 against 440-445).
+   - ma360 (minAwake 360): fresh only, -154 t -1.7, lowest on-time 93.5 (base 92.7), on-time 97.4 (base 97.1): buys on-time with margin.
+   - ds480-db105: y +77 t 1.1 | x -51 t -0.7 : no.
+   - s180: y +6 t 0.1 (lowest 93.0 against 92.5) | x -93 t -1.3 (lowest 92.3 against 92.4) : no.
+   - cp5: y -33 t -0.6 (lowest 93.1 against 92.5) | x -156 t -2.0 (lowest 91.6 against 92.4) : no.
+   - ls7 (lateShadow 7000): y -28 t -0.4, lowest 92.1 : no (x not played).
+3. No variant lifted the weakest worlds at no cost in margin: the lift of the lowest on-time by s180 and cp5 on y did not repeat on x.
+4. Not played (cut by the 75 minutes lost): unions (nothing held on two sets, so none was due), offerModel objects from o2.json, lateTarget, lateLoss, privateFee, kind.py reads.
+
+## Open point (16:06 UTC)
+- After q4h ended (16:04:31) the lock of slot 4 reads busy and data/logs/slot4.out was emptied at 16:04:40: a sweep is playing in slot 4 that this tester did not start (the last start of this tester was q4h at 16:03:46). No q4 row has changed since. Not touched.

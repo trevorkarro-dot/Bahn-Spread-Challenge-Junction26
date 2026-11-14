@@ -1,0 +1,4 @@
+{
+ "q5-fix-a4-l10": {"changeRef": true, "expiredRepost": true, "quotePremium": true, "costPremium": 0.4, "premiumFee": 1.4, "premiumNear": 11, "rampPow": 2, "feeHold": 19, "feeSteps": 24, "offerMin": 0.002, "offerFee": 1.05, "quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.1, "costTrade": 0.5, "tradeNear": 80},
+ "q5-fix-prem4-tr80": {"changeRef": true, "expiredRepost": true, "quotePremium": true, "costPremium": 0.4, "premiumFee": 1.4, "premiumNear": 11, "quoteTradeIns": true, "tradeSlot": 0, "tradeLate": 0.2, "costTrade": 0.5, "tradeNear": 80}
+}

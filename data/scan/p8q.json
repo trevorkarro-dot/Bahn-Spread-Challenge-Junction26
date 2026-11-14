@@ -1,0 +1,11 @@
+{
+ "p8-q15": {
+  "pairQuote": 0.15
+ },
+ "p8-q30": {
+  "pairQuote": 0.3
+ },
+ "p8-q45": {
+  "pairQuote": 0.45
+ }
+}

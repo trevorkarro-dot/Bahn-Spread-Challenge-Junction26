@@ -1,0 +1,14 @@
+{
+ "p8-lead240": {
+  "pairLead": 240
+ },
+ "p8-lead120": {
+  "pairLead": 120
+ },
+ "p8-hop40": {
+  "pairHop": 40
+ },
+ "p8-hop20": {
+  "pairHop": 20
+ }
+}
