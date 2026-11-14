@@ -30,6 +30,9 @@ export type Config = {
   /** Cents of shadow cost per order already waiting for a driver: capacity pressure. */
   lambdaPerOpen: number
   lambdaFreeOpen: number
+  /** The surcharge counts only the waiting orders whose last on-time pickup is within this many minutes: an order
+   * due after the weekend takes no driver from one due tomorrow. 0: all waiting orders. */
+  lambdaHorizon: number
   /** Options need this many minutes between the earliest pickup and the last on-time pickup. */
   minSlack: number
   /** Options also need this many waking minutes (07:00-21:00) between the answer and the last on-time pickup. */
@@ -112,6 +115,9 @@ export type Config = {
   rampLead: number // the ramp reaches its cap this many minutes before the last on-time pickup
   rampAwake: number // and after at most this many waking minutes on the board
   rampPow: number
+  /** The ramp takes only the last so many waking minutes before its end: an order with more time than that stays at
+   * its opening fee until then, since drivers plan a day's work only near that day. 0: the ramp starts at once. */
+  rampLast: number
   /** Orders that the late model gives at least `hardLate` to be late get a ramp of their own: it opens at `hardStart`,
    * and reaches `hardCap` `hardLead` minutes before the last on-time pickup. Null: every order has the same ramp. */
   hardLate: number | null
@@ -144,8 +150,33 @@ export type Config = {
   exploreFee: [number, number] | null
   /** A first, lower fee for the first waking minutes on the board: many gigs suit some driver far better than the
    * typical one, and that driver books at once. Null for none. A fitted model can set it per request. */
+  /** The opening fee by the day of the first post, Monday first, as multiples of the typical fee: drivers are idle
+   * early in the week and busy late in it. A day the list does not reach uses `feeStart`. Null: `feeStart` every day. */
+  feeStartDay: number[] | null
+  /** Or the opening fee by the order: a fitted chance that the order books at its opening fee, from the fee (key
+   * `fee`, a multiple of the typical fee), the request's features, and `mon`, `postFri`, `evening` for the time of
+   * the first post. The desk opens at the fee that saves the most against `startFallback`: chance(p) x (fallback - p),
+   * within `startMin` and `startMax`. A higher fallback opens higher. */
+  startModel: Record<string, number> | null
+  startFallback: number
+  /** The days of the first post on which the start model sets the opening fee, Monday 0. Null: every day. */
+  startDays: number[] | null
+  /** The fallback by the day of the first post, Monday first: what an order that does not book at its opening fee
+   * costs differs by day (a Friday order for Monday still books cheaply over the weekend). A day the list does not
+   * reach uses `startFallback`. */
+  startFallbackDay: number[] | null
+  startMin: number
+  startMax: number
   probeFee: number | null
   probeMinutes: number
+  /** An order still at its first, lower fee is not backlog: the quotes do not count it among the orders without a
+   * driver (their surcharge and the lateness model's backlog numbers) until the first fee has run out. */
+  probeQuiet: boolean
+  /** Or several first fees in a row, each a multiple of the typical fee and the waking minutes it holds, the lowest
+   * first: [[0.65, 15], [0.78, 20]]. Null: the one first fee above. */
+  probeSteps: [number, number][] | null
+  /** The first, lower fee only for orders with at least this many waking minutes from the post to the ramp's end. */
+  probeLead: number
   probeModel: Record<string, number> | null
   exploreProbe: [number, number] | null
   // --- offers ---
@@ -174,6 +205,7 @@ export const DEFAULTS: Config = {
   costNote: 0.05,
   lambdaPerOpen: 150,
   lambdaFreeOpen: 15,
+  lambdaHorizon: 0,
   minSlack: 150,
   minAwake: 360,
   quoteTradeIns: false,
@@ -220,6 +252,7 @@ export const DEFAULTS: Config = {
   rampLead: 200,
   rampAwake: 9999,
   rampPow: 1,
+  rampLast: 0,
   hardLate: null,
   hardStart: 0.9,
   hardCap: 1.6,
@@ -239,8 +272,18 @@ export const DEFAULTS: Config = {
   privateFee: 1,
   premiumFee: 1,
   exploreFee: null,
+  feeStartDay: null,
+  startModel: null,
+  startFallback: 1.1,
+  startDays: null,
+  startFallbackDay: null,
+  startMin: 0.72,
+  startMax: 0.95,
   probeFee: null,
   probeMinutes: 60,
+  probeQuiet: false,
+  probeSteps: null,
+  probeLead: 0,
   probeModel: null,
   exploreProbe: null,
   offers: true,
@@ -281,6 +324,8 @@ export type Ord = {
   expiries: number
   feeMult: number | null // research: the random opening multiple
   probe: number | null // the first, lower fee as a multiple of the typical fee
+  probeUntil: number | null // the minute the first, lower fee runs out
+  startMult: number | null // the opening fee the start model chose, as a multiple of the typical fee
   feat: Record<string, number> | null // the request features of the option that won
   pLate: number // the lateness model's estimate when the order was quoted
   lateKnown: boolean // delivered after its deadline, or refunded
@@ -594,6 +639,12 @@ export class Desk {
     return latest >= Math.max(pickup[0], earliest) ? latest : null
   }
 
+  /** An order that waits for a driver, as the quotes count it. */
+  isBacklog(o: Ord): boolean {
+    if (o.bookedAt !== null || !o.legs.some((l) => !l.delivered)) return false
+    return !(this.cfg.probeQuiet && o.probeUntil !== null && this.now < o.probeUntil)
+  }
+
   /** The numbers a fitted model sees for one option of a request. The same function feeds the journal and the models. */
   features(request: PriceRequest, facts: Facts, kind: Kind, lastPickup: number, earliest: number, open: number): Record<string, number> {
     const leg = request.legs[0]!
@@ -603,7 +654,7 @@ export class Desk {
     const bookH = awakeMinutes(request.respondBy, lastPickup) / 60
     const pickH = Math.min(48, (lastPickup - earliest) / 60)
     const dueDay = Math.floor(lastPickup / DAY)
-    const waiting = [...this.orders.values()].filter((o) => o.bookedAt === null && o.legs.some((l) => !l.delivered) && Math.floor(o.order.lastPickupAt / DAY) === dueDay)
+    const waiting = [...this.orders.values()].filter((o) => this.isBacklog(o) && Math.floor(o.order.lastPickupAt / DAY) === dueDay)
     return {
       one: 1,
       lnPu30: Math.log1p(this.roster.near(pu, 30)),
@@ -762,8 +813,9 @@ export class Desk {
     if (cfg.quoteShare < 1 && this.rand() > cfg.quoteShare) return decline("thinned")
 
     const earliest = Math.max(request.respondBy, leg.pickup.window.from, facts.readyAt ?? 0)
-    const open = [...this.orders.values()].filter((o) => o.bookedAt === null && o.legs.some((l) => !l.delivered)).length
-    const lambda = cfg.lambdaPerOpen * Math.max(0, open - cfg.lambdaFreeOpen)
+    const open = [...this.orders.values()].filter((o) => this.isBacklog(o)).length
+    const near = cfg.lambdaHorizon > 0 ? [...this.orders.values()].filter((o) => this.isBacklog(o) && o.order.lastPickupAt - this.now <= cfg.lambdaHorizon).length : open
+    const lambda = cfg.lambdaPerOpen * Math.max(0, near - cfg.lambdaFreeOpen)
     const priv = request.legs.some((l) => l.pickup.privateAddress || l.delivery.privateAddress)
     const hasFact = facts.readyAt !== null || facts.pickupCloses !== null || facts.deliveryCloses !== null || facts.deadline !== null || facts.manual || facts.plates || facts.summerTyres
     const prices: Partial<Record<Kind, number>> = {}
@@ -878,6 +930,8 @@ export class Desk {
       expiries: 0,
       feeMult: null,
       probe: null,
+      probeUntil: null,
+      startMult: null,
       feat: quote?.feats[order.option] ?? null,
       pLate: quote?.late[order.option] ?? 0.05,
       lateKnown: false,
@@ -1149,6 +1203,25 @@ export class Desk {
     return fee
   }
 
+  /** The opening fee that saves the most by the start model, as a multiple of the typical fee. */
+  bestStart(feat: Record<string, number>, postAt: number): number {
+    const cfg = this.cfg
+    const model = cfg.startModel!
+    const day = Math.floor(postAt / DAY)
+    const base = dot(model, { ...feat, fee: 0, mon: day === 0 ? 1 : 0, d1: day === 1 ? 1 : 0, d2: day === 2 ? 1 : 0, d3: day === 3 ? 1 : 0, postFri: day === 4 ? 1 : 0, evening: (postAt % DAY) / 60 >= 17 ? 1 : 0 })
+    const fallback = cfg.startFallbackDay?.[day] ?? cfg.startFallback
+    let best = cfg.startMax
+    let bestGain = -Infinity
+    for (let p = cfg.startMin; p <= cfg.startMax + 1e-9; p += 0.01) {
+      const gain = (fallback - p) / (1 + Math.exp(-(base + (model.fee ?? 0) * p)))
+      if (gain > bestGain) {
+        bestGain = gain
+        best = p
+      }
+    }
+    return Math.round(best * 100) / 100
+  }
+
   /** The fee schedule for a share of the order's work from now: a calm ramp, or a steep one once time is short. */
   schedule(ord: Ord, share: number): FeeStep[] {
     const cfg = this.cfg
@@ -1178,7 +1251,11 @@ export class Desk {
     } else {
       if (cfg.exploreFee && ord.feeMult === null) ord.feeMult = cfg.exploreFee[0] + this.rand() * (cfg.exploreFee[1] - cfg.exploreFee[0])
       const hard = cfg.hardLate !== null && cfg.lateModel !== null && ord.feat !== null && 1 / (1 + Math.exp(-dot(cfg.lateModel, ord.feat))) >= cfg.hardLate
-      const opening = Math.max(ref * (ord.feeMult ?? (hard ? cfg.hardStart : cfg.feeStart)), ord.shownFee * share, cfg.feeFloor * share)
+      // The day of the order's first post sets its opening fee, also when the schedule is drawn again later.
+      const startDay = Math.floor((ord.firstPostAt ?? this.now) / DAY)
+      if (cfg.startModel && ord.startMult === null && ord.feat && (cfg.startDays === null || cfg.startDays.includes(startDay))) ord.startMult = this.bestStart(ord.feat, ord.firstPostAt ?? this.now)
+      const feeStart = ord.startMult ?? cfg.feeStartDay?.[startDay] ?? cfg.feeStart
+      const opening = Math.max(ref * (ord.feeMult ?? (hard ? cfg.hardStart : feeStart)), ord.shownFee * share, cfg.feeFloor * share)
       const cap = Math.max(opening, ref * (hard ? cfg.hardCap : cfg.feeCap))
       if (cfg.exploreFee) {
         // Research: hold the random fee flat until the deadline warning, which switches to the steep ramp.
@@ -1186,15 +1263,25 @@ export class Desk {
       } else {
         // The ramp runs on waking minutes: a raise at night reaches nobody.
         let from = this.now
-        if (ord.shownFee === 0 && (cfg.probeFee !== null || cfg.exploreProbe || cfg.probeModel)) {
+        const lead = cfg.probeLead <= 0 || awakeMinutes(this.now, ord.order.lastPickupAt - cfg.rampLead) >= cfg.probeLead
+        if (ord.shownFee === 0 && cfg.probeSteps && lead) {
+          for (const [mult, minutes] of cfg.probeSteps) {
+            if (ref * mult >= opening) break
+            add(from, Math.max(ref * mult, cfg.feeFloor * share))
+            from = afterAwake(from, minutes)
+            ord.probe ??= mult
+          }
+          if (from > this.now) ord.probeUntil = from
+        } else if (ord.shownFee === 0 && (cfg.probeFee !== null || cfg.exploreProbe || cfg.probeModel)) {
           ord.probe ??= cfg.exploreProbe
             ? cfg.exploreProbe[0] + this.rand() * (cfg.exploreProbe[1] - cfg.exploreProbe[0])
             : cfg.probeModel && ord.feat
               ? Math.min(cfg.feeStart, Math.max(0.4, dot(cfg.probeModel, ord.feat)))
               : cfg.probeFee
-          if (ord.probe !== null && ord.probe < (ord.feeMult ?? cfg.feeStart)) {
+          if (ord.probe !== null && ord.probe < (ord.feeMult ?? cfg.feeStart) && lead) {
             add(this.now, Math.max(ref * ord.probe, cfg.feeFloor * share))
             from = afterAwake(this.now, cfg.probeMinutes)
+            ord.probeUntil = from
           }
         }
         // After a drop the fee opened low: first back to the old level, in four steps, then the ramp from there.
@@ -1211,7 +1298,8 @@ export class Desk {
         const budget = awakeMinutes(from, ord.order.lastPickupAt - (hard ? cfg.hardLead : cfg.rampLead))
         const span = Math.max(cfg.feeHold + 30, Math.min(budget, cfg.rampAwake))
         if (!climb) add(from, opening)
-        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, cfg.feeHold + ((span - cfg.feeHold) * k) / cfg.feeSteps), base + (cap - base) * (k / cfg.feeSteps) ** cfg.rampPow)
+        const wait = cfg.rampLast > 0 && !hard ? Math.max(0, span - Math.max(cfg.rampLast, cfg.feeHold + 30)) : 0
+        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, wait + cfg.feeHold + ((span - wait - cfg.feeHold) * k) / cfg.feeSteps), base + (cap - base) * (k / cfg.feeSteps) ** cfg.rampPow)
       }
     }
     ord.shownFee = Math.max(ord.shownFee, steps[0]!.feeCents / share)

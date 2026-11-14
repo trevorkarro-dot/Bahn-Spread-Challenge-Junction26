@@ -49,6 +49,9 @@ function steps(path: string): Step[] {
 
 /** Predicted chance against what happened, in ten bins of the chance: filled by `score` when asked. */
 const bins: { n: number; p: number; won: number }[] = Array.from({ length: 10 }, () => ({ n: 0, p: 0, won: 0 }))
+/** The same by the part of the week: five days, each in four parts (to 11, to 13, to 16, later). */
+const slots: { n: number; p: number; won: number; x: number }[] = Array.from({ length: 20 }, () => ({ n: 0, p: 0, won: 0, x: 0 }))
+const slotOf = (at: number) => Math.min(4, Math.floor(at / DAY)) * 4 + ((at % DAY) < 11 * HOUR ? 0 : (at % DAY) < 13 * HOUR ? 1 : (at % DAY) < 16 * HOUR ? 2 : 3)
 
 function score(all: Step[][], cfg: Partial<MarketConfig>, binned = false): { loss: number; n: number; day: number; war: number; full: number; skip: number } {
   let fullLoss = 0
@@ -95,6 +98,11 @@ function score(all: Step[][], cfg: Partial<MarketConfig>, binned = false): { los
           bin.n++
           bin.p += p
           bin.won += s.kind === "won" ? 1 : 0
+          const slot = slots[slotOf(s.at)]!
+          slot.n++
+          slot.p += p
+          slot.won += s.kind === "won" ? 1 : 0
+          slot.x += s.x!
         }
         loss += l
         n++
@@ -127,10 +135,14 @@ console.log(`${files.length} weeks, ${all.reduce((s, r) => s + r.filter((x) => x
 let base: number | null = null
 for (const [name, cfg] of Object.entries(configs)) {
   for (const bin of bins) bin.n = bin.p = bin.won = 0
+  for (const slot of slots) slot.n = slot.p = slot.won = slot.x = 0
   const r = score(all, cfg, args.bins)
   base ??= r.loss
   console.log(`${name.padEnd(34)} log loss ${r.loss.toFixed(5)} (${(r.loss - base >= 0 ? "+" : "") + (r.loss - base).toFixed(5)})  08-18 ${r.day.toFixed(5)}  08-11 ${r.war.toFixed(5)}  with the fastest option ${r.full.toFixed(5)}  without ${r.skip.toFixed(5)}`)
   if (args.bins) console.log("   chance said, share won, quotes: " + bins.map((b) => (b.n ? `${(b.p / b.n).toFixed(2)} ${(b.won / b.n).toFixed(2)} ${b.n}` : "-")).join(" | "))
+  if (args.bins)
+    for (let d = 0; d < 5; d++)
+      console.log(`   day ${d} (to 11, to 13, to 16, later): chance said, share won, mean price over list, quotes: ` + slots.slice(d * 4, d * 4 + 4).map((b) => (b.n ? `${(b.p / b.n).toFixed(3)} ${(b.won / b.n).toFixed(3)} ${Math.exp(b.x / b.n).toFixed(3)} ${b.n}` : "-")).join(" | "))
 }
 // --descend '{"start": {...}, "grid": {"scale": [0.05, 0.06], ...}}': one setting at a time, the best value kept, twice round.
 if (args.descend) {
