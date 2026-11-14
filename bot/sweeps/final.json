@@ -125,5 +125,10 @@
   "lnDone": 0.387
  },
  "quotePrivatePickup": true,
- "privateFee": 1.1
+ "privateFee": 1.1,
+ "changeRef": true,
+ "expiredRepost": true,
+ "pairs": true,
+ "pairFee": 0.75,
+ "pairFee2": 0.9
 }
