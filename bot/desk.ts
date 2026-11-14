@@ -60,6 +60,14 @@ export type Config = {
   ctrlFloor: number
   ctrlCeil: number
   ctrlMinN: number
+  /** A guard instead of a controller: with `ctrlFloor` 1 the shadow cost only rises above `lateShadow`, and with this
+   * set an order's cost falls by 10% of the rise only, so nothing changes while the week runs under `lateTarget`. */
+  ctrlPadExcess: boolean
+  /** The projection reads each open order's risk from where it stands now (driver or not, hours left), not from its quote. */
+  projTable: boolean
+  /** The projection scales the risk of the orders on the way by (late so far) / (late expected so far), up to this
+   * factor (1 or less: no scaling): a week that runs later than the model said will go on doing so. */
+  ctrlAdapt: number
   /** Drivers plan to arrive this many minutes before the deadline: real drives run longer than the map's. */
   deliveryBuffer: number
   /** Trust as an investment: an on-time order is credited with 1% of its dealer's expected remaining revenue, times this
@@ -83,6 +91,15 @@ export type Config = {
   optionFactor: Record<Kind, number>
   minMult: number
   maxMult: number
+  /** A dealer who asked for a faster option than we price accepts less: the flip point of such a quote moves by this much, in log price. */
+  skipShift: number
+  /** Or: of the dealers who asked for a faster option than we price, only this share buys a slower one at any price
+   * (1: all of them). The rest are lost whatever we quote, so such a loss teaches the market model less. */
+  skipReach: number
+  /** When the dealer's fastest option is among our prices, a slower option is worth this much less to them, in log
+   * price. With a number here the model learns by it: a loss counts against the fastest option's price, not the
+   * cheapest, and a win of a slower option counts with this move. Prices stay as they are. Null: every option alike. */
+  pairShift: number | null
   /** When set, quotes a random multiple in [lo, hi] instead of the optimum: for market research. */
   exploreQuote: [number, number] | null
   /** Quote at most this share of requests (by random draw), to thin the load in research runs. */
@@ -95,11 +112,25 @@ export type Config = {
   rampLead: number // the ramp reaches its cap this many minutes before the last on-time pickup
   rampAwake: number // and after at most this many waking minutes on the board
   rampPow: number
+  /** Orders that the late model gives at least `hardLate` to be late get a ramp of their own: it opens at `hardStart`,
+   * and reaches `hardCap` `hardLead` minutes before the last on-time pickup. Null: every order has the same ramp. */
+  hardLate: number | null
+  hardStart: number
+  hardCap: number
+  hardLead: number
   urgentStart: number
   urgentStep: number
   urgentEvery: number
   urgentMax: number
   dropBump: number
+  /** After a drop the gig opens again at `dropBump` times the fee its schedule shows now ("now"), or at `dropBump`
+   * times the fee the driver booked it for ("booked"), and climbs from there in the time that is left. */
+  dropFrom: "now" | "booked"
+  /** With "booked": the fee then climbs back, in `dropClimb` waking minutes, to what "now" would have shown
+   * (1.1 times the schedule's fee at the drop), and goes on from there; null leaves the plain ramp. With less than
+   * `dropSafe` minutes to the last on-time pickup, the gig opens again the "now" way. */
+  dropClimb: number | null
+  dropSafe: number
   /** Once no on-time pickup is left, an hour sooner is worth little until the next refund step, a day away. When
    * `lateStart` is set, a late order's fee starts again at that multiple of the typical fee and climbs by `lateStep`
    * every `lateEvery` waking minutes to `lateMax`, counted from the minute the order became late. */
@@ -120,6 +151,14 @@ export type Config = {
   // --- offers ---
   offers: boolean
   offerFee: number // multiple of the fee now in the app
+  /** A fitted model of the chance that a driver takes an offer: log-odds over where the driver lives, whether they
+   * looked at the order and when, the hour, the fee. When set, an offer goes to each pair of open gig and driver with
+   * at least `offerMin` of a chance, the best pairs first, one open offer a driver, and none from `offerUntil` o'clock
+   * on. A gig gets its first offer once its order has been `offerAge` minutes on the board. Null: the point score. */
+  offerModel: Record<string, number> | null
+  offerMin: number
+  offerUntil: number
+  offerAge: number
   // --- practice clock ---
   tick: number
   wakeOnWin: boolean
@@ -153,6 +192,9 @@ export const DEFAULTS: Config = {
   ctrlFloor: 0.3,
   ctrlCeil: 8,
   ctrlMinN: 40,
+  ctrlPadExcess: false,
+  projTable: false,
+  ctrlAdapt: 1,
   deliveryBuffer: 0,
   trustValue: 0,
   trustWin: 0.45,
@@ -166,6 +208,9 @@ export const DEFAULTS: Config = {
   optionFactor: { same_day: 1, next_day: 1, within_3_days: 1 },
   minMult: 0.8,
   maxMult: 3,
+  skipShift: 0,
+  skipReach: 1,
+  pairShift: null,
   exploreQuote: null,
   quoteShare: 1,
   feeStart: 0.9,
@@ -175,11 +220,18 @@ export const DEFAULTS: Config = {
   rampLead: 200,
   rampAwake: 9999,
   rampPow: 1,
+  hardLate: null,
+  hardStart: 0.9,
+  hardCap: 1.6,
+  hardLead: 200,
   urgentStart: 1.6,
   urgentStep: 0.25,
   urgentEvery: 20,
   urgentMax: 3,
   dropBump: 1.1,
+  dropFrom: "now",
+  dropClimb: null,
+  dropSafe: 0,
   lateStart: null,
   lateStep: 0.1,
   lateEvery: 30,
@@ -193,6 +245,10 @@ export const DEFAULTS: Config = {
   exploreProbe: null,
   offers: true,
   offerFee: 1,
+  offerModel: null,
+  offerMin: 0.004,
+  offerUntil: 22.5,
+  offerAge: 0,
   tick: 10,
   wakeOnWin: false,
 }
@@ -221,6 +277,7 @@ export type Ord = {
   firstPostAt: number | null
   bookedAt: number | null
   drops: number
+  climb: { until: number; to: number } | null // after a drop: the fee to be back at, in cents for the whole order, and by when
   expiries: number
   feeMult: number | null // research: the random opening multiple
   probe: number | null // the first, lower fee as a multiple of the typical fee
@@ -244,6 +301,7 @@ type GigRec = {
   offered: Set<string>
   openOffers: number
   views: number
+  bookedFee?: number // what the driver who holds it booked it for, in cents
 }
 
 const NO_FACTS: Facts = { readyAt: null, pickupOpens: null, pickupCloses: null, deliveryOpens: null, deliveryCloses: null, deadline: null, manual: false, plates: false, summerTyres: false, unsure: false }
@@ -266,6 +324,17 @@ function openOn(place: StopPlace, day: number, opens: number | null, closes: num
 }
 
 /** Minutes between two world minutes that fall in the hours when drivers look at the app, 07:00 to 21:00. */
+/** Orders without a driver that ended late, by waking hours left to the last on-time pickup (under 1, 3, 5, 8, 12, 16,
+ * 22, 30, more): trips under 400 km with a quote-time chance under 8%, and from 8%; then the long hauls likewise.
+ * From a million saved orders (tools/orders2.py). */
+const RISK_HOURS = [1, 3, 5, 8, 12, 16, 22, 30]
+const RISK_TABLE = [
+  [1, 0.85, 0.44, 0.17, 0.11, 0.06, 0.05, 0.05, 0.02],
+  [1, 0.83, 0.57, 0.33, 0.28, 0.19, 0.12, 0.07, 0.04],
+  [1, 0.98, 0.9, 0.46, 0.21, 0.19, 0.21, 0.12, 0.06],
+  [1, 1, 0.85, 0.62, 0.4, 0.36, 0.31, 0.27, 0.28],
+]
+
 export function awakeMinutes(from: number, to: number): number {
   let total = 0
   for (let day = Math.floor(from / DAY); day * DAY < to; day++) {
@@ -314,6 +383,12 @@ export class Desk {
   /** Where a driver last delivered for us, and when. */
   readonly lastAt = new Map<string, { place: string; at: number }>()
   readonly offersToday = new Map<string, number>()
+  /** Offers that each driver has not answered yet. */
+  readonly offersOpen = new Map<string, number>()
+  /** Who looked at a gig of each order, and the minute of their last look. */
+  readonly viewers = new Map<string, Map<string, number>>()
+  /** The last day each driver set out on a gig of ours. */
+  readonly worked = new Map<string, number>()
   readonly busy = new Map<string, number>() // driver -> gigs of ours they hold
   readonly money = new Map<string, { revenue: number; refund: number }>()
   readonly dealerSeen = new Map<string, { n: number; list: number }>()
@@ -369,6 +444,8 @@ export class Desk {
       if (this.now >= boundary && !this.#shocks.has(boundary) && day % 7 < 5) {
         this.#shocks.add(boundary)
         this.market.shock()
+        if (boundary % DAY === 8 * HOUR) this.market.eventStart(5 - (day % 7))
+        else this.market.eventEnd()
       }
     }
   }
@@ -387,7 +464,12 @@ export class Desk {
       case "gig_viewed": {
         this.seen.set(event.driverId, Math.floor(event.at / DAY))
         const gig = this.gigs.get(event.gigId)
-        if (gig) gig.views++
+        if (gig) {
+          gig.views++
+          let viewers = this.viewers.get(gig.orderId)
+          if (!viewers) this.viewers.set(gig.orderId, (viewers = new Map()))
+          viewers.set(event.driverId, event.at)
+        }
         return
       }
       case "gig_booked": {
@@ -396,6 +478,7 @@ export class Desk {
         if (!gig) return
         gig.status = "booked"
         gig.driverId = event.driverId
+        gig.bookedFee = event.feeCents
         this.busy.set(event.driverId, (this.busy.get(event.driverId) ?? 0) + 1)
         const ord = this.orders.get(gig.orderId)
         if (ord) ord.bookedAt = event.at
@@ -404,6 +487,7 @@ export class Desk {
       case "gig_started": {
         const gig = this.gigs.get(event.gigId)
         if (gig) gig.status = "started"
+        this.worked.set(event.driverId, Math.floor(event.at / DAY))
         return
       }
       case "gig_dropped":
@@ -413,6 +497,7 @@ export class Desk {
         const gig = this.gigs.get(event.gigId)
         if (gig) gig.openOffers = Math.max(0, gig.openOffers - 1)
         if (gig) gig.offered.add(event.driverId)
+        this.offersOpen.set(event.driverId, Math.max(0, (this.offersOpen.get(event.driverId) ?? 0) - 1))
         if (this.replaying) this.offersToday.set(event.driverId, (this.offersToday.get(event.driverId) ?? 0) + 1)
         if (event.answer === "accepted") this.stats.offersAccepted++
         if (event.answer !== "expired") this.seen.set(event.driverId, Math.floor(event.at / DAY))
@@ -517,6 +602,8 @@ export class Desk {
     const km = roadKm(pu, de)
     const bookH = awakeMinutes(request.respondBy, lastPickup) / 60
     const pickH = Math.min(48, (lastPickup - earliest) / 60)
+    const dueDay = Math.floor(lastPickup / DAY)
+    const waiting = [...this.orders.values()].filter((o) => o.bookedAt === null && o.legs.some((l) => !l.delivered) && Math.floor(o.order.lastPickupAt / DAY) === dueDay)
     return {
       one: 1,
       lnPu30: Math.log1p(this.roster.near(pu, 30)),
@@ -542,6 +629,16 @@ export class Desk {
       fri: Math.floor(request.arrivedAt / DAY) === 4 ? 1 : 0,
       open: open / 10,
       snow: this.snowOn(pu, earliest, lastPickup + DAY) || this.snowOn(de, earliest, lastPickup + DAY) ? 1 : 0,
+      // Sharper: snow at the pickup place at the last on-time pickup keeps its drivers at home; snow on the way in slows the trip.
+      snowPick: this.snowOn(pu, lastPickup, lastPickup + 1) ? 1 : 0,
+      snowPickLong: km >= 400 && this.snowOn(pu, lastPickup, lastPickup + 1) ? 1 : 0,
+      snowDrop: this.snowOn(de, Math.max(request.arrivedAt, leg.pickup.window.from), request.options.find((o) => o.kind === kind)?.deadline ?? lastPickup + DAY) ? 1 : 0,
+      // The desk's own backlog for the same day: cars on the same lane, and long hauls, that have no driver yet.
+      lnOLane: Math.log1p(waiting.filter((o) => o.order.legs[0]!.pickup.placeId === pu && o.order.legs[0]!.delivery.placeId === de).length),
+      lnOLong: km >= 400 ? Math.log1p(waiting.filter((o) => roadKm(o.order.legs[0]!.pickup.placeId, o.order.legs[0]!.delivery.placeId) >= 400).length) : 0,
+      duFri: dueDay === 4 ? 1 : 0,
+      duMon: dueDay >= 5 ? 1 : 0,
+      duMonLong: dueDay >= 5 && km >= 400 ? 1 : 0,
     }
   }
 
@@ -590,19 +687,40 @@ export class Desk {
     return 0.25 * ord.order.priceCents + this.shadow() + trust
   }
 
+  /** The chance that an order on its way ends late, from where it stands now: the share of saved orders in the same
+   * state that did. An order without a driver is the more at risk the fewer waking hours are left to its last on-time
+   * pickup; a long haul far more, since its driver must set out in the morning. */
+  riskNow(ord: Ord): number {
+    const long = roadKm(ord.order.legs[0]!.pickup.placeId, ord.order.legs[0]!.delivery.placeId) >= 400
+    if (ord.legs.every((l) => l.delivered || l.pickedUp)) return 0.003
+    if (ord.bookedAt !== null) return long ? 0.026 : 0.006
+    const hours = awakeMinutes(this.now, ord.order.lastPickupAt) / 60
+    const band = RISK_HOURS.findIndex((edge) => hours < edge)
+    const row = RISK_TABLE[(long ? 2 : 0) + (ord.pLate >= 0.08 ? 1 : 0)]!
+    return row[band === -1 ? RISK_HOURS.length : band]!
+  }
+
   /** The late share the week is heading for: late orders so far, plus the risk of every order still on the way. */
   projectedLate(): number {
     let late = 0
+    let open = 0
+    let expected = 0
     let n = 0
     for (const ord of this.orders.values()) {
       n++
-      if (ord.lateKnown || ord.late) late += 1
-      else if (ord.legs.every((l) => l.delivered)) late += 0
-      else if (ord.legs.every((l) => l.delivered || l.pickedUp)) late += 0.02
-      else if (ord.bookedAt !== null) late += 0.05
-      else late += ord.urgent ? 0.6 : Math.max(0.05, ord.pLate)
+      if (ord.lateKnown || ord.late) {
+        late += 1
+        expected += ord.pLate
+      } else if (ord.legs.every((l) => l.delivered)) expected += ord.pLate
+      else if (this.cfg.projTable) open += this.riskNow(ord)
+      else if (ord.legs.every((l) => l.delivered || l.pickedUp)) open += 0.02
+      else if (ord.bookedAt !== null) open += 0.05
+      else open += ord.urgent ? 0.6 : Math.max(0.05, ord.pLate)
     }
-    return late / Math.max(n, this.cfg.ctrlMinN)
+    // A hard week shows in its own count: where more orders ran late than their quotes expected, those on the way
+    // are that much more at risk than in an average week (two orders of prior weight, and never less than average).
+    const harsh = this.cfg.ctrlAdapt > 1 ? Math.min(this.cfg.ctrlAdapt, Math.max(1, (late + 2) / (expected + 2))) : 1
+    return (late + harsh * open) / Math.max(n, this.cfg.ctrlMinN)
   }
 
   /** The cost of one more late order now, in cents: the Lagrange multiplier of the 90% minimum, set by feedback. */
@@ -654,6 +772,7 @@ export class Desk {
     const detail: Record<string, unknown> = {}
     const shadow = this.shadow()
     detail.shadow = Math.round(shadow)
+    if (cfg.ctrlPow > 0) detail.proj = Math.round(this.projectedLate() * 1000) / 1000
     const pipe = cfg.trustValue > 0 ? this.pipeline(request.dealerId) : 0
     detail.pipe = Math.round(pipe * 10) / 10
     const explore = cfg.exploreQuote ? Math.exp(Math.log(cfg.exploreQuote[0]) + this.rand() * Math.log(cfg.exploreQuote[1] / cfg.exploreQuote[0])) : null
@@ -672,7 +791,7 @@ export class Desk {
     // A dealer who asked for a faster option than we quote buys less often.
     const skipped = chosen.length > 0 && chosen[0]!.kind !== request.options[0]!.kind
     for (const option of chosen) {
-      const optionLane: Lane = cfg.marketTags ? { ...lane, tags: [band, skipped ? "skip" : option.kind] } : lane
+      const optionLane: Lane = cfg.marketTags ? { ...lane, tags: [band, skipped ? "skip" : option.kind] } : skipped && (cfg.skipShift !== 0 || cfg.skipReach < 1) ? { ...lane, ...(cfg.skipShift !== 0 ? { shift: cfg.skipShift } : {}), ...(cfg.skipReach < 1 ? { reach: cfg.skipReach } : {}) } : lane
       lanes[option.kind] = optionLane
       const x = feats[option.kind]!
       const k = cfg.feeModel ? Math.max(0.6, dot(cfg.feeModel, x)) : cfg.feeK + (option.kind === "same_day" ? cfg.costSameDay : 0) + (priv ? cfg.costPrivate : 0) + (leg.car.premium ? cfg.costPremium : 0) + (hasFact ? cfg.costNote : 0) + (back ? cfg.costTrade : 0)
@@ -693,7 +812,7 @@ export class Desk {
         detail[`point_${option.kind}`] = Math.round(point)
         detail[`loss_${option.kind}`] = Math.round(trustLoss)
       }
-      const cost = Math.max(request.referenceFeeCents * k, cfg.feeFloor * 1.15) + lambda + pLate * (shadow + cfg.lateLoss * option.listPriceCents * 1.4 + trustLoss) - (cfg.ctrlPow > 0 ? 0.1 * shadow : 0) - trust
+      const cost = Math.max(request.referenceFeeCents * k, cfg.feeFloor * 1.15) + lambda + pLate * (shadow + cfg.lateLoss * option.listPriceCents * 1.4 + trustLoss) - (cfg.ctrlPow > 0 ? 0.1 * (cfg.ctrlPadExcess ? shadow - cfg.lateShadow : shadow) : 0) - trust
       let mult: number
       if (explore !== null) mult = explore
       else {
@@ -709,6 +828,8 @@ export class Desk {
     this.stats.quoted++
     this.quotes.set(request.id, { lane, lanes, mults, late: lates, feats, declined: false })
     const flip = this.market.flip(lane)
+    if (this.market.warNow() > 0.0005) detail.war = Math.round(this.market.warNow() * 1000) / 1000
+    if (this.market.outageNow(lane.pickup) > 0.0005) detail.outage = Math.round(this.market.outageNow(lane.pickup) * 1000) / 1000
     this.journal.push({ t: this.now, what: "quote", id: request.id, mults, lambda, flip: Math.round(Math.exp(flip.m) * 1000) / 1000, sd: Math.round(Math.sqrt(flip.v) * 1000) / 1000, ...detail })
     this.push({ type: "quote", requestId: request.id, prices })
   }
@@ -719,7 +840,10 @@ export class Desk {
     this.stats.lost++
     // The dealer turned down every option: the cheapest one, against its own flip point, says the most.
     const [kind, lowest] = (Object.entries(quote.mults) as [Kind, number][]).sort((a, b) => a[1] - b[1])[0]!
-    this.market.observe(quote.lanes[kind] ?? quote.lane, Math.log(lowest), false)
+    // A dealer who asked for speed weighs the fastest option: its price is the one they turned down.
+    const fastest = this.cfg.pairShift !== null ? this.requests.get(requestId)?.options[0]?.kind : undefined
+    const told = fastest !== undefined && quote.mults[fastest] !== undefined ? fastest : kind
+    this.market.observe(quote.lanes[told] ?? quote.lane, Math.log(quote.mults[told] ?? lowest), false)
   }
 
   onWon(order: Order): void {
@@ -729,7 +853,13 @@ export class Desk {
     this.stats.won++
     // In a replay the quote is a reconstruction; the order's price is what the dealer really accepted.
     const paid = order.priceCents / (request.options.find((o) => o.kind === order.option)?.listPriceCents ?? order.priceCents)
-    if (quote && !quote.declined) this.market.observe(quote.lanes[order.option] ?? quote.lane, Math.log(this.replaying ? paid : (quote.mults[order.option] ?? paid)), true)
+    if (quote && !quote.declined) {
+      const lane = quote.lanes[order.option] ?? quote.lane
+      const fastest = request.options[0]!.kind
+      // A slower option taken although the fastest one had a price: it was worth less to the dealer, and still won.
+      const slower = this.cfg.pairShift !== null && order.option !== fastest && quote.mults[fastest] !== undefined
+      this.market.observe(slower ? { ...lane, shift: (lane.shift ?? 0) + this.cfg.pairShift! } : lane, Math.log(this.replaying ? paid : (quote.mults[order.option] ?? paid)), true)
+    }
     const facts = parseNote(request.note?.text, request.arrivedAt, request.note?.language)
     const ord: Ord = {
       order,
@@ -744,6 +874,7 @@ export class Desk {
       firstPostAt: null,
       bookedAt: null,
       drops: 0,
+      climb: null,
       expiries: 0,
       feeMult: null,
       probe: null,
@@ -1046,8 +1177,9 @@ export class Desk {
       for (let k = 0; k <= Math.min(count, 40); k++) add(this.now + k * cfg.urgentEvery, Math.min(top, start + k * ref * cfg.urgentStep))
     } else {
       if (cfg.exploreFee && ord.feeMult === null) ord.feeMult = cfg.exploreFee[0] + this.rand() * (cfg.exploreFee[1] - cfg.exploreFee[0])
-      const opening = Math.max(ref * (ord.feeMult ?? cfg.feeStart), ord.shownFee * share, cfg.feeFloor * share)
-      const cap = Math.max(opening, ref * cfg.feeCap)
+      const hard = cfg.hardLate !== null && cfg.lateModel !== null && ord.feat !== null && 1 / (1 + Math.exp(-dot(cfg.lateModel, ord.feat))) >= cfg.hardLate
+      const opening = Math.max(ref * (ord.feeMult ?? (hard ? cfg.hardStart : cfg.feeStart)), ord.shownFee * share, cfg.feeFloor * share)
+      const cap = Math.max(opening, ref * (hard ? cfg.hardCap : cfg.feeCap))
       if (cfg.exploreFee) {
         // Research: hold the random fee flat until the deadline warning, which switches to the steep ramp.
         add(this.now, opening)
@@ -1065,10 +1197,21 @@ export class Desk {
             from = afterAwake(this.now, cfg.probeMinutes)
           }
         }
-        const budget = awakeMinutes(from, ord.order.lastPickupAt - cfg.rampLead)
+        // After a drop the fee opened low: first back to the old level, in four steps, then the ramp from there.
+        let base = opening
+        const climb = ord.climb !== null && this.now < ord.climb.until && Math.min(cap, ord.climb.to * share) > opening ? ord.climb : null
+        if (climb) {
+          const back = Math.min(cap, climb.to * share)
+          const minutes = awakeMinutes(this.now, climb.until)
+          add(this.now, opening)
+          for (let k = 1; k <= 4; k++) add(afterAwake(this.now, (minutes * k) / 4), opening + ((back - opening) * k) / 4)
+          from = climb.until
+          base = back
+        }
+        const budget = awakeMinutes(from, ord.order.lastPickupAt - (hard ? cfg.hardLead : cfg.rampLead))
         const span = Math.max(cfg.feeHold + 30, Math.min(budget, cfg.rampAwake))
-        add(from, opening)
-        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, cfg.feeHold + ((span - cfg.feeHold) * k) / cfg.feeSteps), opening + (cap - opening) * (k / cfg.feeSteps) ** cfg.rampPow)
+        if (!climb) add(from, opening)
+        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, cfg.feeHold + ((span - cfg.feeHold) * k) / cfg.feeSteps), base + (cap - base) * (k / cfg.feeSteps) ** cfg.rampPow)
       }
     }
     ord.shownFee = Math.max(ord.shownFee, steps[0]!.feeCents / share)
@@ -1108,7 +1251,12 @@ export class Desk {
     this.journal.push({ t: this.now, what: kind, gig: gigId, id: ord.order.id, driver: driverId })
     // The gig is open again at its old schedule. A driver who gave it back wants more; so does a short clock.
     const share = gig.legs.length / ord.order.legs.length
-    ord.shownFee = Math.max(ord.shownFee, (this.feeNow(gig.post.schedule) * this.cfg.dropBump) / share)
+    ord.climb = null
+    if (this.cfg.dropFrom === "booked" && gig.bookedFee !== undefined && ord.order.lastPickupAt - this.now >= this.cfg.dropSafe) {
+      const back = Math.max(ord.shownFee, (this.feeNow(gig.post.schedule) * 1.1) / share)
+      ord.shownFee = (gig.bookedFee * this.cfg.dropBump) / share
+      if (this.cfg.dropClimb !== null && back > ord.shownFee) ord.climb = { until: afterAwake(this.now, this.cfg.dropClimb), to: back }
+    } else ord.shownFee = Math.max(ord.shownFee, (this.feeNow(gig.post.schedule) * (this.cfg.dropFrom === "booked" ? 1.1 : this.cfg.dropBump)) / share)
     if (ord.order.lastPickupAt - this.now < 3 * HOUR) ord.urgent = true
     this.reprice(gig, ord)
   }
@@ -1201,21 +1349,89 @@ export class Desk {
     if (this.cfg.offers) this.sendOffers()
   }
 
+  #offer(gig: GigRec, id: string, score: number, fee: number): void {
+    gig.offered.add(id)
+    gig.openOffers++
+    this.offersToday.set(id, (this.offersToday.get(id) ?? 0) + 1)
+    this.offersOpen.set(id, (this.offersOpen.get(id) ?? 0) + 1)
+    this.stats.offers++
+    const model = this.cfg.offerModel !== null
+    this.push({ type: "offer", gigId: gig.id, driverId: id, feeCents: fee }, (result) => {
+      if (!result.ok) {
+        gig.openOffers = Math.max(0, gig.openOffers - 1)
+        this.offersOpen.set(id, Math.max(0, (this.offersOpen.get(id) ?? 0) - 1))
+      } else this.journal.push({ t: this.now, what: "offer", gig: gig.id, driver: id, fee, score: model ? Math.round(score * 10000) / 10000 : Math.round(score * 10) / 10 })
+    })
+  }
+
+  /** Offers by the fitted model: each pair of open gig and driver gets its chance to be taken, and the best pairs go first. */
+  sendModelOffers(): void {
+    const cfg = this.cfg
+    const w = (key: string) => cfg.offerModel![key] ?? 0
+    const minute = this.now % DAY
+    if (minute < 7 * HOUR || minute >= cfg.offerUntil * HOUR) return
+    const today = Math.floor(this.now / DAY)
+    const hour = Math.floor(minute / 60)
+    const pool: { gig: GigRec; id: string; p: number; fee: number }[] = []
+    for (const gig of this.gigs.values()) {
+      if (gig.status !== "open" || gig.openOffers >= 3) continue
+      const ord = this.orders.get(gig.orderId)
+      if (!ord || ord.firstPostAt === null || this.now - ord.firstPostAt < cfg.offerAge) continue
+      const leg = ord.order.legs[gig.legs[0]!]!
+      const first = gig.post.stops[0]!.window?.from ?? leg.pickup.window.from
+      if (first > this.now + 20 * HOUR) continue
+      const share = gig.legs.length / ord.order.legs.length
+      const fee = Math.round(this.feeNow(gig.post.schedule) * cfg.offerFee)
+      const viewers = this.viewers.get(gig.orderId)
+      const base =
+        w("one") +
+        (roadKm(leg.pickup.placeId, leg.delivery.placeId) >= 400 ? w("long") : 0) +
+        w("fee") * (Math.min(2, fee / (ord.request.referenceFeeCents * share)) - 1) +
+        (Math.floor(leg.pickup.window.from / DAY) === today ? w("today") : 0) +
+        (w("hour") * (Math.min(21, Math.max(7, hour)) - 7)) / 10 +
+        (hour >= 18 ? w("evening") : 0)
+      for (const d of this.roster.drivers.values()) {
+        if (gig.offered.has(d.id) || (this.offersToday.get(d.id) ?? 0) >= 3 || (this.offersOpen.get(d.id) ?? 0) > 0) continue
+        if (gig.post.audience.experienced && !experienced(d)) continue
+        if (gig.post.audience.manualLicence && d.licence !== "manual") continue
+        if ((this.busy.get(d.id) ?? 0) >= 2) continue
+        const view = viewers?.get(d.id)
+        const worked = this.worked.get(d.id) === today
+        const homeToDelivery = airKm(d.homePlaceId, leg.delivery.placeId)
+        // Nothing speaks for a driver who lives far from the delivery, never looked at the order and is not out today.
+        if (view === undefined && homeToDelivery > 80 && !worked) continue
+        let z = base + (homeToDelivery <= 15 ? w("deAt") : homeToDelivery <= 30 ? w("de30") : homeToDelivery <= 80 ? w("de80") : 0)
+        if (airKm(d.homePlaceId, leg.pickup.placeId) <= 30) z += w("pu30")
+        const where = this.lastAt.get(d.id)
+        if (where && Math.floor(where.at / DAY) === today && airKm(where.place, leg.pickup.placeId) <= 40) z += w("here")
+        if (worked) z += w("worked")
+        else if (this.seen.get(d.id) === today) z += w("seen")
+        if (view !== undefined) {
+          const ago = this.now - view
+          z += ago <= 30 ? w("view30") : ago <= 120 ? w("view120") : ago <= 600 ? w("view600") : w("viewOld")
+        }
+        z += w("lnDone") * (Math.log1p(d.completedGigs) - 3)
+        const p = 1 / (1 + Math.exp(-z))
+        if (p >= cfg.offerMin) pool.push({ gig, id: d.id, p, fee })
+      }
+    }
+    pool.sort((a, b) => b.p - a.p)
+    let left = this.offerBudget ?? Infinity
+    for (const item of pool) {
+      if (left <= 0) break
+      if (item.gig.openOffers >= 3 || (this.offersToday.get(item.id) ?? 0) >= 3 || (this.offersOpen.get(item.id) ?? 0) > 0) continue
+      this.#offer(item.gig, item.id, item.p, item.fee)
+      left--
+    }
+  }
+
   sendOffers(): void {
+    if (this.cfg.offerModel) return this.sendModelOffers()
     const minute = this.now % DAY
     if (minute < 7 * HOUR || minute > 22 * HOUR + 30) return
     const today = Math.floor(this.now / DAY)
     const pool: { gig: GigRec; id: string; score: number; fee: number }[] = []
-    const send = (gig: GigRec, id: string, score: number, fee: number) => {
-      gig.offered.add(id)
-      gig.openOffers++
-      this.offersToday.set(id, (this.offersToday.get(id) ?? 0) + 1)
-      this.stats.offers++
-      this.push({ type: "offer", gigId: gig.id, driverId: id, feeCents: fee }, (result) => {
-        if (!result.ok) gig.openOffers = Math.max(0, gig.openOffers - 1)
-        else this.journal.push({ t: this.now, what: "offer", gig: gig.id, driver: id, fee, score: Math.round(score * 10) / 10 })
-      })
-    }
+    const send = (gig: GigRec, id: string, score: number, fee: number) => this.#offer(gig, id, score, fee)
     for (const gig of this.gigs.values()) {
       if (gig.status !== "open" || gig.openOffers >= 3) continue
       const ord = this.orders.get(gig.orderId)

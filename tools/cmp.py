@@ -1,9 +1,10 @@
 """Paired comparison of sweep variants against a base, seed by seed, from data/results.log.
-python tools/cmp.py [--only=t,m] <base-tag> <prefix-or-tag> [...]   (the last result of each seed and tag counts;
+python tools/cmp.py [--only=t,m] [--low] <base-tag> <prefix-or-tag> [...]   (the last result of each seed and tag counts;
 --only keeps the seeds whose names start with one of the given prefixes)"""
 import sys, math, collections
 
-args = [a for a in sys.argv[1:] if not a.startswith('--only=')]
+low = '--low' in sys.argv   # also print each variant's five lowest on-time shares, with their seeds
+args = [a for a in sys.argv[1:] if not a.startswith('--only=') and a != '--low']
 only = tuple(x for a in sys.argv[1:] if a.startswith('--only=') for x in a[7:].split(','))
 base_tag, wanted = args[0], args[1:]
 res = collections.defaultdict(dict)
@@ -29,4 +30,5 @@ for tag, r in rows:
     sd = math.sqrt(sum((x - mean) ** 2 for x in d) / max(1, n - 1))
     se = sd / math.sqrt(n)
     print(f"{tag:22s} {n:3d} {sum(r[s]['margin'] for s in seeds) / n:8.0f} {mean:+7.0f} {se:5.0f} {(mean / se if se else 0):+5.1f} {sum(x > 0 for x in d):2d}/{n:<2d} {min(d):+7.0f} {min(r[s]['margin'] for s in seeds):7.0f} "
-          f"{sum(r[s]['ontime'] for s in seeds) / n:6.1f} {min(r[s]['ontime'] for s in seeds):5.1f} {sum(r[s]['ranked'] for s in seeds):3d}/{n}")
+          f"{sum(r[s]['ontime'] for s in seeds) / n:6.1f} {min(r[s]['ontime'] for s in seeds):5.1f} {sum(r[s]['ranked'] for s in seeds):3d}/{n}"
+          + (f"   won {sum(r[s]['won'] for s in seeds) / n:5.1f}   " + ' '.join(f"{s}:{r[s]['ontime']:.1f}" for s in sorted(seeds, key=lambda s: r[s]['ontime'])[:5]) + f"  under 93: {sum(r[s]['ontime'] < 93 for s in seeds)}" if low else ''))
