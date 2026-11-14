@@ -16,6 +16,16 @@ export async function rejoin(world: World, cfg: Config, level: number, roster: D
   let failed = 0
   if (history.length > 0) {
     desk.replaying = true
+    // The history holds an `order_lost` for every request, quoted or not. Before the first request this team won,
+    // nothing tells a lost quote from a week that was joined late, and a desk that takes those losses as answers
+    // believes in prices far too low. So they count as never quoted.
+    const arrived = new Map<string, number>()
+    let quotedFrom = Infinity
+    for (const event of history) {
+      if (event.kind === "price_request") arrived.set(event.request.id, event.request.arrivedAt)
+      else if (event.kind === "order_won") quotedFrom = Math.min(quotedFrom, arrived.get(event.order.id) ?? Infinity)
+    }
+    desk.quotedFrom = quotedFrom
     const gigs = [...snapshot.gigs].sort((a, b) => a.postedAt - b.postedAt)
     const byId = new Map(gigs.map((gig) => [gig.id, gig]))
     let next = 0

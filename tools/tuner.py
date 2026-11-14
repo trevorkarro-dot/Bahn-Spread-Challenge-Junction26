@@ -18,7 +18,7 @@ to bot/sweeps/tuned-r<n>.json. Decisions go to data/logs/tuner.log.
 No world is played near a final or a test final (the windows below, UTC); a stage that would run into one waits, and
 a stage caught by one is stopped and played again afterwards. A file data/tuner.stop ends the run after the current
 stage; data/tuner.pause holds it between stages. Trial weeks are saved compressed (data/runs-gz)."""
-import sys, os, json, math, time, copy, signal, random, subprocess, datetime
+import sys, os, json, math, time, copy, signal, random, subprocess, datetime, threading, collections
 
 R = '/mnt/data/trevor/spread'
 BOT = R + '/bot'
@@ -40,7 +40,7 @@ KIDS = []  # the sweep processes of the stage in play, each the leader of its ow
 
 def ended(signum, frame):
     """A TERM (tools/tune.sh stop): the stage's sweeps are stopped by their own process groups, then the tuner ends."""
-    for p in KIDS:
+    for p in list(KIDS):
         if p.poll() is None:
             try:
                 os.killpg(p.pid, signal.SIGTERM)
@@ -161,9 +161,12 @@ def ontime(res, tag, seeds):
 
 
 def play(name, variants, seeds):
-    """Plays every variant on every seed over all the extra keys; returns when all are done."""
+    """Plays every variant on every seed over all the extra keys; returns when all are done. The work is a queue of
+    chunks of 8 weeks (one variant, 8 worlds: what a team may hold at once); every key takes the next chunk when it
+    is free, so a key that the game server serves slowly just plays fewer of them."""
     json.dump(variants, open(f'{BOT}/sweeps/{name}.json', 'w'))
     est = len(variants) * len(seeds) / RATE / 60 + 2
+    os.makedirs(R + '/data/tuner', exist_ok=True)
     while True:
         said = False
         while blocked() or blocked(est) or os.path.exists(PAUSE):
@@ -175,39 +178,58 @@ def play(name, variants, seeds):
                 sys.exit(0)
             time.sleep(30)
         ks = keys()
-        tags = list(variants)
-        os.makedirs(R + '/data/tuner', exist_ok=True)
-        # The work is dealt evenly: by variants when there are as many as keys (each key plays its variants on every
-        # world), else by worlds.
-        if len(tags) >= len(ks):
-            k = len(ks)
-            shares = [({t: variants[t] for t in tags[i::k]}, seeds) for i in range(k)]
-        else:
-            k = min(len(ks), len(seeds))
-            shares = [(variants, seeds[i::k]) for i in range(k)]
+        chunks = collections.deque((tag, seeds[i:i + 8]) for tag in variants for i in range(0, len(seeds), 8))
+        total = len(chunks)
+        lock = threading.Lock()
+        halt = threading.Event()
+        count = [0] * len(ks)
+        del KIDS[:]
+
+        def worker(i):
+            first = True
+            while not halt.is_set():
+                with lock:
+                    if not chunks:
+                        return
+                    tag, worlds = chunks.popleft()
+                path = f'{R}/data/tuner/{name}-k{i}.json'
+                json.dump({tag: variants[tag]}, open(path, 'w'))
+                # The key travels in the environment only: never on a command line, never into a log.
+                env = {**os.environ, 'SPREAD_URL': URL, 'SPREAD_KEY': ks[i][1], 'SPREAD_GZ': '1'}
+                clean = f'{NODE} worlds.ts --clean > /dev/null 2>&1; ' if first else ''
+                first = False
+                cmd = f"{clean}exec {NODE} sweep.ts --seeds {','.join(worlds)} --variants @../data/tuner/{name}-k{i}.json"
+                p = subprocess.Popen(PREFIX + ['bash', '-c', cmd], cwd=BOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True)
+                with lock:
+                    KIDS.append(p)
+                p.wait()
+                with lock:
+                    KIDS.remove(p)
+                count[i] += 1
+
         started = time.time()
-        procs = []
-        for i, (part, worlds) in enumerate(shares):
-            json.dump(part, open(f'{R}/data/tuner/{name}-k{i}.json', 'w'))
-            # The key travels in the environment only: never on a command line, never into a log.
-            env = {**os.environ, 'SPREAD_URL': URL, 'SPREAD_KEY': ks[i][1], 'SPREAD_GZ': '1'}
-            cmd = f"{NODE} worlds.ts --clean > /dev/null 2>&1; exec {NODE} sweep.ts --seeds {','.join(worlds)} --variants @../data/tuner/{name}-k{i}.json"
-            procs.append(subprocess.Popen(PREFIX + ['bash', '-c', cmd], cwd=BOT, env=env, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, start_new_session=True))
-        KIDS[:] = procs
+        threads = [threading.Thread(target=worker, args=(i,), daemon=True) for i in range(min(len(ks), total))]
+        for t in threads:
+            t.start()
         cut = False
-        while any(p.poll() is None for p in procs):
+        while any(t.is_alive() for t in threads):
             time.sleep(5)
             if blocked():
                 cut = True
-                for p in procs:
+                halt.set()
+                with lock:
+                    running = list(KIDS)
+                for p in running:
                     if p.poll() is None:
                         try:
                             os.killpg(p.pid, signal.SIGTERM)
                         except ProcessLookupError:
                             pass
                 break
+        for t in threads:
+            t.join(30)
         if not cut:
-            log(f'   {name}: {len(variants)} variants x {len(seeds)} worlds on {k} keys in {(time.time() - started) / 60:.1f} min')
+            log(f'   {name}: {len(variants)} variants x {len(seeds)} worlds on {len(threads)} keys in {(time.time() - started) / 60:.1f} min (chunks a key: {min(count)} to {max(count)})')
             return
         log(f'   {name}: stopped for a final or test final; it is played again afterwards')
         time.sleep(20)

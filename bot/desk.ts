@@ -225,6 +225,9 @@ export type Config = {
   wakeOnWin: boolean
   /** Practice only: the world first runs to this minute with nobody at the desk (4320: a test final's shape). */
   playFrom: number
+  /** A history replayed at a join holds a loss for every request that nobody quoted. With this set, the requests from
+   * before the first one this team won count as never quoted (a week joined late), and their losses teach nothing. */
+  skipUnquoted: boolean
 }
 
 export const DEFAULTS: Config = {
@@ -333,6 +336,7 @@ export const DEFAULTS: Config = {
   tick: 10,
   wakeOnWin: false,
   playFrom: 0,
+  skipUnquoted: true,
 }
 
 type LegState = {
@@ -482,6 +486,8 @@ export class Desk {
   readonly rand: () => number
   /** While true, the desk rebuilds its books from the world's history: it learns from each event and answers nothing. */
   replaying = false
+  /** In a replay, the arrival minute of the first request this team won: nothing earlier was quoted by it. */
+  quotedFrom = 0
   /** Live play: at most this many offers a round, the best fits first. Null for no limit. */
   offerBudget: number | null = null
   stats = { quoted: 0, declined: 0, won: 0, lost: 0, posts: 0, refused: 0, offers: 0, offersAccepted: 0 }
@@ -866,6 +872,8 @@ export class Desk {
     }
     this.requests.set(request.id, request)
     if (this.now >= request.respondBy) return
+    // Joined late: this request came before the team quoted anything, so its loss is no answer to a price.
+    if (this.replaying && this.cfg.skipUnquoted && request.arrivedAt < this.quotedFrom) return
     const cfg = this.cfg
     const facts = parseNote(request.note?.text, request.arrivedAt, request.note?.language)
     const leg = request.legs[0]!
