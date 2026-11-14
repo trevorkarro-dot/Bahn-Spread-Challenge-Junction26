@@ -1298,7 +1298,9 @@ export class Desk {
         best = p
       }
     }
-    return { start: Math.round(best * 100) / 100, expect: fallback - bestGain }
+    // What to expect counts the plain fallback: a day's own fallback only steers the opening fee.
+    const chance = 1 / (1 + Math.exp(-(base + (model.fee ?? 0) * best)))
+    return { start: Math.round(best * 100) / 100, expect: chance * best + (1 - chance) * cfg.startFallback }
   }
 
   /** The fee schedule for a share of the order's work from now: a calm ramp, or a steep one once time is short. */
