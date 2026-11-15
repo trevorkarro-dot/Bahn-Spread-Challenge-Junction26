@@ -79,6 +79,9 @@ export type Config = {
   /** With quoteTradeIns: only where at least this many drivers live within 80 km of the new car's pickup. In saved
    * weeks trade-ins from such places arrive on time 92% of the time, from sparser places about half the time. 0: all. */
   tradeNear: number
+  /** With quoteTradeIns: also trade-ins whose new car waits at a private address (a three-hour slot days before the
+   * customer's hour). In saved weeks those are 60-72% on time and lose money; false declines them. */
+  tradePrivate: boolean
   quotePremium: boolean
   /** With quotePremium: only where at least this many experienced drivers (the only ones who may drive a premium
    * car) live within 80 km of the pickup. */
@@ -118,6 +121,19 @@ export type Config = {
   saveShare: number // and to at most this share of what being on time is worth
   /** Cents an on-time order is worth on Monday morning for the trust it builds with its dealer; falls to zero by Friday evening. */
   trustBonus: number
+  /** Parking: the dealer's count is halved, and its satisfaction dips, when a late order LANDS, not when its deadline
+   * passes. A late order of a dealer with many requests still to come is posted with a delivery window that opens on
+   * Friday 18:00, after the week's last requests, when what that saves (times this factor) is more than the further
+   * refund it costs (0: never). */
+  parkLate: number
+  parkMargin: number // cents the saving must beat the further refund by
+  parkDrive: number // a car due on Wednesday or Thursday: only with at most this many road minutes (it must land on Friday evening)
+  parkDays: number[] // the deadline days (0 Monday) whose late orders may be parked
+  parkFee: number // cents of dearer fee to expect for a car due on Monday or Tuesday (it lands on the weekend or on Monday)
+  parkMax: number // at most this many parked cars at a time: Friday evening has only so many drivers
+  /** No car is parked while the week's projected late share stands at this or more: such a week hits its dealers
+   * anyway, and parking then only pays the further refund (1: no such limit). */
+  parkCalm: number
   /** No gig opens below this fee in cents: a short trip's typical fee is too small to move a driver. */
   feeFloor: number
   /** Which options to price: all feasible ones, or only the latest feasible one. */
@@ -183,6 +199,8 @@ export type Config = {
   /** Gigs with a private pickup, and gigs for a premium car, open and climb at this multiple of the usual fees. */
   privateFee: number
   premiumFee: number
+  /** The same for a trade-in's gigs: two cars and a customer's hour for about one car's typical fee. */
+  tradeFee: number
   exploreFee: [number, number] | null
   /** A first, lower fee for the first waking minutes on the board: many gigs suit some driver far better than the
    * typical one, and that driver books at once. Null for none. A fitted model can set it per request. */
@@ -252,6 +270,60 @@ export type Config = {
   pairRamp: number[]
   /** Taken off a request's cost, as a share of its typical fee, when one of our open orders could share a driver with it. */
   pairQuote: number
+  /** Minutes a car that could share a driver waits for a partner before its own gig is posted, when its last on-time
+   * pickup is at least `pairHoldSlack` minutes away. 0: no wait. */
+  pairHold: number
+  pairHoldSlack: number
+  /** The anchor. Drivers learn (booked fee) / (first fee anyone viewed for the order). With a number here, a plain
+   * order's first gig is a decoy at this multiple of the typical fee whose delivery window no driver can meet, so
+   * nobody can book it; after `anchorWait` minutes it is withdrawn and the real gig goes out as usual. 0: none.
+   * `anchorExp`: only experienced drivers see the decoy. `anchorSlack`: only orders with at least this many minutes
+   * from now to the last on-time pickup. */
+  anchorFee: number
+  anchorWait: number
+  anchorExp: boolean
+  anchorSlack: number
+  /** Nobody books on a Sunday and few on a Saturday afternoon, yet the ramp climbed through them and Monday's drivers
+   * met the top of it at dawn. With an hour here, the ramp's clock stands still from that hour on Saturday to Monday
+   * 00:00. Null: the weekend counts like any day. */
+  weekendFrom: number | null
+  /** A new day brings new drivers. At 21:00 each open gig's fee restarts at this share of the fee it shows (not under
+   * its opening fee) and climbs again in the time left; the list is by the day that begins, Monday 0, next Monday 7.
+   * 1 or a missing day: no restart. Only orders with `resetSlack` minutes left before the last on-time pickup (one
+   * number, or a list by day like `nightReset`).
+   * `resetClimb`: the fee is back at its old level after this many waking minutes of the new day (in four steps) and
+   * goes on from there, so only the drivers of the night and the dawn meet the lower fee. 0: the plain ramp. */
+  nightReset: number[] | null
+  resetSlack: number | number[]
+  resetClimb: number
+  /** No restart in a week that is close to the 90% minimum: only while `projectedLate()` is at most this share. */
+  resetMaxLate: number
+  /** The other side of the same hour: a gig whose last on-time pickup falls before `dawnBefore` o'clock of the day
+   * that begins (a long drive due that day) finds its driver at dawn or not at all; the deadline warning, three hours
+   * before the last pickup, comes after the drivers have planned their day. At 21:00 such a gig gets a ladder for the
+   * dawn: its fee stays through the night and climbs in four steps from `dawnFrom` o'clock, over two hours, to this
+   * multiple of the typical fee; it is not restarted. By the day that begins, like `nightReset`; null: none. */
+  dawnBoost: number[] | null
+  dawnBefore: number
+  dawnFrom: number
+  /** A booking given back in the night (21:00 to 07:00) whose last on-time pickup is on the day that begins has one
+   * dawn to find its next driver. Such a gig reopens at this multiple of the booked fee instead of `dropBump`; a
+   * list by the day that begins, like `nightReset` (null or a missing day: `dropBump`). Null: `dropBump` always.
+   * Only gigs whose last on-time pickup is before `dropNightBefore` o'clock of that day (one hour, or a list by
+   * day): on the last Monday a later one finds its driver during the day anyway. */
+  dropNight: (number | null)[] | null
+  dropNightBefore: number | number[]
+  /** A second chance to share a driver. Cars pair only when one of them is won; after a night of drops many cars
+   * are without a driver at once, and two-car gigs need half the drivers. At minute `mornPair` of a day (0: never) that
+   * began with at least `mornPairDrops` drops in its first hour, each one-car order without a driver whose last on-time
+   * pickup is that day may pair again (also after a drop or a split): where a partner exists, its gig is withdrawn and
+   * the two go out as one gig, by the rules of `pairs`. */
+  mornPair: number
+  mornPairDrops: number
+  mornPairFrom: number
+  /** A two-car gig that its driver gives back goes out as a two-car gig again (unless a car is urgent), not as two
+   * one-car gigs; at night its clock starts at `mornPairFrom`. */
+  pairRedo: boolean
   // --- practice clock ---
   tick: number
   wakeOnWin: boolean
@@ -286,6 +358,7 @@ export const DEFAULTS: Config = {
   tradeLate: 0.15,
   tradeSlot: 0,
   tradeNear: 0,
+  tradePrivate: true,
   quotePremium: false,
   premiumNear: 0,
   quoteUnsure: false,
@@ -308,6 +381,13 @@ export const DEFAULTS: Config = {
   urgentMaxTrust: 6,
   saveShare: 0.6,
   trustBonus: 0,
+  parkLate: 0,
+  parkMargin: 2000,
+  parkDrive: 240,
+  parkDays: [0, 1, 2, 3],
+  parkFee: 3000,
+  parkMax: 10,
+  parkCalm: 1,
   feeFloor: 0,
   optionMode: "all",
   marketTags: false,
@@ -346,6 +426,7 @@ export const DEFAULTS: Config = {
   lateMax: 3,
   privateFee: 1,
   premiumFee: 1,
+  tradeFee: 1,
   exploreFee: null,
   feeStartDay: null,
   startModel: null,
@@ -380,6 +461,26 @@ export const DEFAULTS: Config = {
   pairWait: 60,
   pairRamp: [],
   pairQuote: 0,
+  pairHold: 0,
+  pairHoldSlack: 480,
+  anchorFee: 0,
+  anchorWait: 10,
+  anchorExp: false,
+  anchorSlack: 0,
+  weekendFrom: null,
+  nightReset: null,
+  resetSlack: 0,
+  resetClimb: 0,
+  resetMaxLate: 1,
+  dawnBoost: null,
+  dawnBefore: 15,
+  dawnFrom: 5,
+  dropNight: null,
+  dropNightBefore: 24,
+  mornPair: 0,
+  mornPairDrops: 10,
+  mornPairFrom: 345,
+  pairRedo: false,
   tick: 10,
   wakeOnWin: false,
   playFrom: 0,
@@ -423,6 +524,9 @@ export type Ord = {
   alone: boolean // a trade-in whose two cars go in separate gigs from now on
   noPair: boolean // it was in a gig with another order's car that found no driver, or it was dropped: it goes alone
   counted: boolean // its revenue line has come: the dealer's count already holds it
+  anchor?: { gigId: string | null; at: number } | null // the decoy before the first gig: up since `at`; null: over
+  parkFail?: boolean // the world refused its parked gig, or the gig ran out: no second try
+  parked?: boolean
 }
 
 type GigRec = {
@@ -474,24 +578,27 @@ const RISK_TABLE = [
   [1, 1, 0.85, 0.62, 0.4, 0.36, 0.31, 0.27, 0.28],
 ]
 
-export function awakeMinutes(from: number, to: number): number {
+/** The end of a day's waking time: 21:00, or with `weekendFrom` that hour on a Saturday and no time on a Sunday. */
+const awakeEnd = (day: number, weekendFrom: number | null): number => day * DAY + (weekendFrom === null || day % 7 < 5 ? 21 : day % 7 === 5 ? weekendFrom : 0) * HOUR
+
+export function awakeMinutes(from: number, to: number, weekendFrom: number | null = null): number {
   let total = 0
   for (let day = Math.floor(from / DAY); day * DAY < to; day++) {
     const a = Math.max(from, day * DAY + 7 * HOUR)
-    const b = Math.min(to, day * DAY + 21 * HOUR)
+    const b = Math.min(to, awakeEnd(day, weekendFrom))
     if (b > a) total += b - a
   }
   return total
 }
 
 /** The clock minute that lies `awake` waking minutes (07:00 to 21:00) after `from`. */
-export function afterAwake(from: number, awake: number): number {
+export function afterAwake(from: number, awake: number, weekendFrom: number | null = null): number {
   let left = awake
   let t = from
   for (let guard = 0; guard < 30; guard++) {
     const day = Math.floor(t / DAY)
     const a = Math.max(t, day * DAY + 7 * HOUR)
-    const b = day * DAY + 21 * HOUR
+    const b = awakeEnd(day, weekendFrom)
     if (b > a) {
       if (left <= b - a) return a + left
       left -= b - a
@@ -532,10 +639,16 @@ export class Desk {
   readonly money = new Map<string, { revenue: number; refund: number }>()
   readonly dealerSeen = new Map<string, { n: number; list: number }>()
   requestsSeen = 0
+  /** The drops in the first hour of the day in progress (mornPair). */
+  #night = { day: -1, n: 0 }
+  /** The orders that may pair again although a driver gave them back (mornPair), and the day of the last pass. */
+  readonly again = new Set<string>()
+  #pairPass = -1
   #day = -1
   #shocks = new Set<number>()
   readonly rand: () => number
   /** While true, the desk rebuilds its books from the world's history: it learns from each event and answers nothing. */
+  #resetDay = -1
   replaying = false
   /** In a replay, the arrival minute of the first request this team won: nothing earlier was quoted by it. */
   quotedFrom = 0
@@ -853,6 +966,41 @@ export class Desk {
     return 0.01 * price * (rebuilt * (lost - rebuilt / 2) + Math.max(0, wins - rebuilt) * (lost - rebuilt))
   }
 
+  /** A late order held back to Friday evening: the minutes its delivery window opens and ends, or null to let it land
+   * as soon as a driver brings it. Landing now costs the dealer's dip (0.075 in log price, 0.95 left after each
+   * on-time order: fitted from saved weeks) and half its count on the orders we still expect to win from it. */
+  parkWindow(ord: Ord, leg: Leg, drive: number): { from: number; to: number } | null {
+    const cfg = this.cfg
+    const from = 4 * DAY + 18 * HOUR
+    const dueDay = Math.floor(ord.order.deadline / DAY)
+    if (cfg.parkLate <= 0 || ord.parkFail || this.now >= from || ord.order.legs.length !== 1 || leg.pickup.privateAddress || leg.delivery.privateAddress || !cfg.parkDays.includes(dueDay)) return null
+    // Refund tiers: 25% to 24 hours late, 50% to two business days, then the whole price. A car due on Monday or
+    // Tuesday is in its last tier by Friday evening, so any later hour will do. One due on Wednesday must land by
+    // Friday 20:00 to stay at 50%, one due on Thursday to stay at 25%: only on Friday evening, at a site still open.
+    let to = this.endsAt
+    if (dueDay >= 2) {
+      const pickup = openOn(leg.pickup, 4, null, null)
+      const delivery = openOn(leg.delivery, 4, null, null)
+      if (!pickup || !delivery || drive > cfg.parkDrive) return null
+      to = Math.min(delivery[1], 4 * DAY + 20 * HOUR - 10)
+      if (to < from + 45 || this.now > from - drive - 3 * HOUR || pickup[0] > from - drive - 30 || pickup[1] < from - drive) return null
+    }
+    // Once parked, parked: a gig that ran out with the pickup site's day is posted again the same way.
+    if (ord.parked) return { from, to }
+    if (cfg.parkCalm < 1 && this.projectedLate() >= cfg.parkCalm) return null
+    let parked = 0
+    for (const other of this.orders.values()) if (other.parked && other.legs.some((l) => !l.delivered)) parked++
+    if (parked >= cfg.parkMax) return null
+    const dealer = ord.order.dealerId
+    const lands = this.now + 22 * HOUR
+    const { price, wins } = this.dealerOutlook(dealer, lands, ord.order.priceCents / 1.45)
+    const saved = (0.075 * price * (1 - 0.95 ** wins)) / 0.05 + this.trustLoss(dealer, lands, ord.order.priceCents / 1.45, Math.min(25, this.pipeline(dealer)))
+    // The further refund, with an allowance for a Friday window that no driver takes (the next tier then); a car
+    // that waits for a weekend or Monday driver also pays a dearer fee (parkFee).
+    const refund = dueDay >= 3 ? 0.1 * ord.order.priceCents : dueDay === 2 ? 0.4 * ord.order.priceCents : 0.75 * ord.order.priceCents + cfg.parkFee
+    return saved * cfg.parkLate > refund + cfg.parkMargin ? { from, to } : null
+  }
+
   /** The dealer's count as it will stand if the orders on the way arrive on time. */
   pipeline(dealerId: string): number {
     let count = this.market.trust.get(dealerId) ?? 0
@@ -940,6 +1088,7 @@ export class Desk {
     }
     if (request.legs.length > 1 && !cfg.quoteTradeIns) return decline("trade-in")
     if (request.legs.length > 1 && cfg.tradeNear > 0 && this.roster.near(leg.pickup.placeId, 80) < cfg.tradeNear) return decline("trade-in far")
+    if (request.legs.length > 1 && leg.pickup.privateAddress && !cfg.tradePrivate) return decline("trade-in private")
     if (facts.unsure && !cfg.quoteUnsure) return decline("note unsure")
     if (leg.car.premium && !cfg.quotePremium) return decline("premium")
     if (leg.car.premium && cfg.premiumNear > 0 && this.roster.near(leg.pickup.placeId, 80, experienced) < cfg.premiumNear) return decline("premium far")
@@ -1247,6 +1396,7 @@ export class Desk {
 
   /** Posts a gig for every leg of the order that has none. */
   dispatch(ord: Ord): void {
+    if (this.cfg.anchorFee > 0 && this.anchoring(ord)) return
     if (this.tradeGig(ord)) {
       if (ord.legs.every((state) => state.gigId === null && this.now >= state.retryAt)) this.postTrade(ord)
       return
@@ -1254,8 +1404,46 @@ export class Desk {
     ord.legs.forEach((state, leg) => {
       if (state.delivered || state.pickedUp || state.gigId !== null || this.now < state.retryAt) return
       if (this.cfg.pairs && this.tryPair(ord)) return
+      // A car with time to spare waits a little for a second car to share its driver.
+      if (this.cfg.pairs && this.cfg.pairHold > 0 && ord.firstPostAt === null && this.now < ord.wonAt + this.cfg.pairHold && ord.order.lastPickupAt - this.now >= this.cfg.pairHoldSlack && this.pairable(ord)) return
       this.postLeg(ord, leg)
     })
+  }
+
+  /** The decoy before an order's first gig (see `anchorFee`). True while the order waits for it. */
+  anchoring(ord: Ord): boolean {
+    const cfg = this.cfg
+    if (ord.anchor === null || this.replaying) return false
+    if (ord.anchor === undefined) {
+      const leg = ord.order.legs[0]!
+      const state = ord.legs[0]!
+      const plain = ord.order.legs.length === 1 && !leg.car.premium && !leg.pickup.privateAddress && !leg.delivery.privateAddress
+      const from = Math.max(this.now, leg.delivery.window.from)
+      // Nobody can deliver by then: half the drive after the first minute of the pickup window (drivers plan by the
+      // stated window, not by a later ready time in a note).
+      const to = Math.max(this.now, leg.pickup.window.from) + Math.floor(roadMinutes(leg.pickup.placeId, leg.delivery.placeId) / 2)
+      if (!plain || ord.firstPostAt !== null || ord.late || ord.urgent || state.gigId !== null || state.pickedUp || state.delivered || to <= from + 1 || ord.order.lastPickupAt - this.now < cfg.anchorSlack) {
+        ord.anchor = null
+        return false
+      }
+      const anchor: { gigId: string | null; at: number } = { gigId: null, at: this.now }
+      ord.anchor = anchor
+      const fee = Math.round(this.refOf(ord.request, cfg.refLaneFee) * cfg.anchorFee)
+      const stops: StopRef[] = [{ orderId: ord.order.id, leg: 0, kind: "pickup" }, { orderId: ord.order.id, leg: 0, kind: "delivery", window: { from, to } }]
+      this.push({ type: "post", stops, audience: { experienced: cfg.anchorExp, manualLicence: false }, schedule: [{ at: this.now, feeCents: fee }] }, (result) => {
+        if (!result.ok) {
+          ord.anchor = null
+          return
+        }
+        anchor.gigId = result.id
+        this.journal.push({ t: this.now, what: "anchor", gig: result.id, id: ord.order.id, fee, stops })
+      })
+      return true
+    }
+    if (this.now < ord.anchor.at + cfg.anchorWait) return true
+    if (ord.anchor.gigId !== null) this.push({ type: "withdraw", gigId: ord.anchor.gigId })
+    ord.anchor = null
+    return false
   }
 
   // ---------------------------------------------------------------- two orders in one gig
@@ -1263,7 +1451,7 @@ export class Desk {
   /** Whether this order's car may share a gig with another order's car: one plain car, no trouble so far, no note that
    * pins its hours, and it has not been in a pair that found no driver. */
   pairable(ord: Ord): boolean {
-    if (!this.cfg.pairs || ord.order.legs.length !== 1 || ord.late || ord.urgent || ord.noPair || ord.drops > 0) return false
+    if (!this.cfg.pairs || ord.order.legs.length !== 1 || ord.late || ord.urgent || ord.noPair || (ord.drops > 0 && !this.again.has(ord.order.id)) || ord.anchor) return false
     const leg = ord.order.legs[0]!
     const state = ord.legs[0]!
     if (state.delivered || state.pickedUp || state.failed.length > 0 || this.now < state.retryAt) return false
@@ -1406,9 +1594,7 @@ export class Desk {
     if (!pa || !pb || pa.late || pb.late) return alone("no on-time plan")
     const stops = [...pa.stops, ...pb.stops]
     for (const stop of stops) if (stop.window && (stop.window.to <= stop.window.from || stop.window.to <= this.now)) delete stop.window
-    const sum = first.request.referenceFeeCents * first.refScale + second.request.referenceFeeCents * second.refScale
-    const shares = cfg.pairRamp.length > 0 ? cfg.pairRamp : cfg.pairFee2 > cfg.pairFee ? [cfg.pairFee, cfg.pairFee2] : [cfg.pairFee]
-    const schedule: FeeStep[] = shares.map((share, i) => ({ at: this.now + Math.round((i * cfg.pairWait) / shares.length), feeCents: Math.round(sum * share) }))
+    const { sum, from, wait, schedule } = this.pairSchedule(first, second)
     const post: PostAction = { type: "post", stops, audience: { experienced: false, manualLicence: a.manual || b.manual }, schedule }
     a.gigId = b.gigId = "pending"
     first.firstPostAt ??= this.now
@@ -1417,9 +1603,21 @@ export class Desk {
     this.push(post, (result) => {
       if (!result.ok) return alone(result.reason)
       a.gigId = b.gigId = result.id
-      this.gigs.set(result.id, { id: result.id, post, orderId: first.order.id, legs: [0], status: "open", driverId: null, postedAt: this.now, late: false, buffered: false, offered: new Set(), openOffers: 0, views: 0, pair: { orderId: second.order.id, until: this.now + cfg.pairWait } })
+      this.gigs.set(result.id, { id: result.id, post, orderId: first.order.id, legs: [0], status: "open", driverId: null, postedAt: this.now, late: false, buffered: false, offered: new Set(), openOffers: 0, views: 0, pair: { orderId: second.order.id, until: Math.max(this.now, from) + wait } })
       this.journal.push({ t: this.now, what: "post", gig: result.id, id: first.order.id, pair: second.order.id, leg: 0, late: false, urgent: false, stops, schedule, ref: Math.round(sum), feeMult: null, probe: null })
     })
+  }
+
+  /** The fee steps of a two-car gig from now. Two cars paired again in the night (mornPair, pairRedo): the gig's
+   * clock starts at `mornPairFrom`, when drivers get up. */
+  pairSchedule(first: Ord, second: Ord): { sum: number; from: number; wait: number; schedule: FeeStep[] } {
+    const cfg = this.cfg
+    const sum = first.request.referenceFeeCents * first.refScale + second.request.referenceFeeCents * second.refScale
+    const wait = cfg.pairWait
+    const shares = cfg.pairRamp.length > 0 ? cfg.pairRamp : cfg.pairFee2 > cfg.pairFee ? [cfg.pairFee, cfg.pairFee2] : [cfg.pairFee]
+    const dawn = (Math.floor(this.now / DAY) + (this.now % DAY >= 21 * HOUR ? 1 : 0)) * DAY + cfg.mornPairFrom
+    const from = this.now < dawn && this.now + 16 * HOUR > dawn && (this.again.has(first.order.id) || this.again.has(second.order.id)) ? dawn : this.now
+    return { sum, from, wait, schedule: shares.map((share, i) => ({ at: from + Math.round((i * wait) / shares.length), feeCents: Math.round(sum * share) })) }
   }
 
   /** Ends a pair gig that no driver has booked: each car goes alone from now on. */
@@ -1474,7 +1672,7 @@ export class Desk {
   }
 
   /** The stops of one leg, with windows only where the note, a retry or lateness makes them differ from the order's. */
-  plan(ord: Ord, legIndex: number, forceLate = false): { stops: StopRef[]; late: boolean; buffered?: boolean } | null {
+  plan(ord: Ord, legIndex: number, forceLate = false): { stops: StopRef[]; late: boolean; buffered?: boolean; parked?: boolean } | null {
     const leg = ord.order.legs[legIndex]!
     const state = ord.legs[legIndex]!
     const facts = this.legFacts(ord.facts, legIndex)
@@ -1492,6 +1690,23 @@ export class Desk {
       if (late) {
         // No on-time pickup is left. Without windows the stops run to the end of the world; keep only a ready time still ahead.
         if (earliest > this.now && !leg.pickup.privateAddress) pickupStop.window = { from: earliest, to: this.endsAt }
+        const park = legIndex === 0 ? this.parkWindow(ord, leg, drive) : null
+        if (park) {
+          deliveryStop.window = park
+          // A pickup without a window of its own would end with the order's window and take the gig out of the app.
+          // From Friday morning: the car should not stand with a driver for days.
+          pickupStop.window = { from: Math.max(earliest, 4 * DAY + 6 * HOUR), to: park.to }
+          // Friday's drivers know their day from Thursday evening: the late fee climbs from then, not from now. A car
+          // that any later day will do for waits for a Saturday or Monday driver: a climb over the weekend buys nothing.
+          if (!ord.parked) ord.lateSince = Math.max(this.now, park.to >= this.endsAt ? 7 * DAY + 7 * HOUR : park.from - 25 * HOUR)
+          ord.parked = true
+          return { stops: [pickupStop, deliveryStop], late, parked: true }
+        }
+        // Its Friday window found no driver: an ordinary late order from now, with the late fee from its start.
+        if (ord.parked) {
+          ord.parked = false
+          ord.lateSince = this.now
+        }
         return { stops: [pickupStop, deliveryStop], late }
       }
       if (earliest > Math.max(this.now, leg.pickup.window.from) && !leg.pickup.privateAddress) pickupStop.window = { from: earliest, to: Math.max(earliest, leg.pickup.window.to, ord.order.deadline) }
@@ -1548,11 +1763,12 @@ export class Desk {
         state.retryAt = this.now + 20
         // A window that the world will not take: the next try goes without windows.
         if (/window|ended|no driver can/i.test(result.reason)) ord.late = true
+        if (planned.parked) ord.parkFail = true
         return
       }
       state.gigId = result.id
       this.gigs.set(result.id, { id: result.id, post, orderId: ord.order.id, legs: [leg], status: "open", driverId: null, postedAt: this.now, late: planned.late, buffered: planned.buffered === true, offered: new Set(), openOffers: 0, views: 0 })
-      this.journal.push({ t: this.now, what: "post", gig: result.id, id: ord.order.id, leg, late: planned.late, urgent: ord.urgent, stops: planned.stops, schedule: post.schedule, ref: ord.request.referenceFeeCents, feeMult: ord.feeMult, probe: ord.probe })
+      this.journal.push({ t: this.now, what: "post", gig: result.id, id: ord.order.id, leg, late: planned.late, ...(planned.parked ? { parked: true } : {}), urgent: ord.urgent, stops: planned.stops, schedule: post.schedule, ref: ord.request.referenceFeeCents, feeMult: ord.feeMult, probe: ord.probe })
     })
   }
 
@@ -1617,7 +1833,7 @@ export class Desk {
   schedule(ord: Ord, share: number): FeeStep[] {
     const cfg = this.cfg
     const first = ord.order.legs[0]!
-    const boost = (ord.order.legs.some((l) => l.pickup.privateAddress) ? cfg.privateFee : 1) * (first.car.premium ? cfg.premiumFee : 1)
+    const boost = (ord.order.legs.some((l) => l.pickup.privateAddress) ? cfg.privateFee : 1) * (first.car.premium ? cfg.premiumFee : 1) * (ord.order.legs.length > 1 ? cfg.tradeFee : 1)
     const ref = this.refOf(ord.request, cfg.refLaneFee) * share * boost * ord.refScale
     const steps: FeeStep[] = []
     const add = (at: number, fee: number) => {
@@ -1686,15 +1902,37 @@ export class Desk {
           from = climb.until
           base = back
         }
-        const budget = awakeMinutes(from, ord.order.lastPickupAt - (hard ? cfg.hardLead : cfg.rampLead))
+        const budget = awakeMinutes(from, ord.order.lastPickupAt - (hard ? cfg.hardLead : cfg.rampLead), cfg.weekendFrom)
         const span = Math.max(cfg.feeHold + 30, Math.min(budget, cfg.rampAwake))
         if (!climb) add(from, opening)
         const wait = cfg.rampLast > 0 && !hard ? Math.max(0, span - Math.max(cfg.rampLast, cfg.feeHold + 30)) : 0
-        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, wait + cfg.feeHold + ((span - wait - cfg.feeHold) * k) / cfg.feeSteps), base + (cap - base) * (k / cfg.feeSteps) ** cfg.rampPow)
+        for (let k = 1; k <= cfg.feeSteps; k++) add(afterAwake(from, wait + cfg.feeHold + ((span - wait - cfg.feeHold) * k) / cfg.feeSteps, cfg.weekendFrom), base + (cap - base) * (k / cfg.feeSteps) ** cfg.rampPow)
       }
     }
     ord.shownFee = Math.max(ord.shownFee, steps[0]!.feeCents / share)
     return steps
+  }
+
+  /** The dawn ladder (see `dawnBoost`) for a gig whose last on-time pickup is early on the day that begins or has
+   * just begun: `was` (cents for the whole order) through the night, then four steps to the top. False: not such a gig. */
+  dawnLadder(gig: GigRec, ord: Ord, was: number): boolean {
+    const cfg = this.cfg
+    const day = Math.floor(ord.order.lastPickupAt / DAY)
+    const from = day * DAY + cfg.dawnFrom * HOUR
+    const top = this.refOf(ord.request, cfg.refLaneFee) * ord.refScale * (cfg.dawnBoost?.[day] ?? 0)
+    if (top <= was || gig.status !== "open" || gig.pair || gig.late || ord.late || ord.urgent) return false
+    if (ord.order.lastPickupAt >= day * DAY + cfg.dawnBefore * HOUR || this.now < day * DAY - 3 * HOUR || this.now >= from + 2 * HOUR) return false
+    const share = gig.legs.length / ord.order.legs.length
+    const schedule: FeeStep[] = [0, 1, 2, 3, 4].map((k) => ({ at: Math.max(this.now + k, k === 0 ? 0 : from + (k - 1) * 40), feeCents: Math.round((was + ((top - was) * k) / 4) * share) }))
+    // A later redraw (a drop, the deadline warning) starts from the top of the ladder.
+    ord.shownFee = top
+    ord.climb = null
+    this.push({ type: "reprice", gigId: gig.id, schedule }, (result) => {
+      if (!result.ok) return
+      gig.post = { ...gig.post, schedule }
+      this.journal.push({ t: this.now, what: "reprice", gig: gig.id, id: ord.order.id, urgent: false, late: false, dawn: true, schedule })
+    })
+    return true
   }
 
   reprice(gig: GigRec, ord: Ord): void {
@@ -1720,6 +1958,8 @@ export class Desk {
   onDropped(gigId: string, driverId: string, kind: string): void {
     const gig = this.gigs.get(gigId)
     this.busy.set(driverId, Math.max(0, (this.busy.get(driverId) ?? 1) - 1))
+    if (this.cfg.mornPair > 0 && this.now % DAY < 60) this.nightDrop()
+    this.again.delete(this.gigs.get(gigId)?.orderId ?? "")
     if (!gig) return
     gig.status = "open"
     gig.driverId = null
@@ -1733,6 +1973,19 @@ export class Desk {
         if (o.order.lastPickupAt - this.now < 3 * HOUR) o.urgent = true
       }
       this.journal.push({ t: this.now, what: kind, gig: gigId, id: gig.orderId, pair: gig.pair.orderId, driver: driverId })
+      const [first, second] = this.ordersOf(gig)
+      // The gig is open again and its drivers hear of it again: it stays a two-car gig for one more `pairWait` (pairRedo).
+      if (this.cfg.pairRedo && first && second && !first.urgent && !second.urgent && !first.late && !second.late && this.pairPlan(first, second)) {
+        first.noPair = second.noPair = false
+        this.again.add(first.order.id).add(second.order.id)
+        const { from, wait, schedule } = this.pairSchedule(first, second)
+        gig.pair.until = from + wait
+        this.push({ type: "reprice", gigId: gig.id, schedule }, (result) => {
+          if (result.ok) gig.post = { ...gig.post, schedule }
+        })
+        this.journal.push({ t: this.now, what: "pair-redo", gig: gigId, id: gig.orderId, pair: gig.pair.orderId, until: gig.pair.until })
+        return
+      }
       this.withdraw(gig)
       return
     }
@@ -1746,11 +1999,53 @@ export class Desk {
     ord.climb = null
     if (this.cfg.dropFrom === "booked" && gig.bookedFee !== undefined && ord.order.lastPickupAt - this.now >= this.cfg.dropSafe) {
       const back = Math.max(ord.shownFee, (this.feeNow(gig.post.schedule) * 1.1) / share)
-      ord.shownFee = (gig.bookedFee * this.cfg.dropBump) / share
+      const dawn = Math.floor((this.now + 3 * HOUR) / DAY)
+      const before = Array.isArray(this.cfg.dropNightBefore) ? (this.cfg.dropNightBefore[dawn] ?? 24) : this.cfg.dropNightBefore
+      const night = (this.now + 3 * HOUR) % DAY < 10 * HOUR && ord.order.lastPickupAt < dawn * DAY + before * HOUR
+      ord.shownFee = (gig.bookedFee * ((night ? this.cfg.dropNight?.[dawn] : null) ?? this.cfg.dropBump)) / share
       if (this.cfg.dropClimb !== null && back > ord.shownFee) ord.climb = { until: afterAwake(this.now, this.cfg.dropClimb), to: back }
     } else ord.shownFee = Math.max(ord.shownFee, (this.feeNow(gig.post.schedule) * (this.cfg.dropFrom === "booked" ? 1.1 : this.cfg.dropBump)) / share)
     if (ord.order.lastPickupAt - this.now < 3 * HOUR) ord.urgent = true
+    // A drop in the night before an early last pickup: the dawn ladder from the fee it would open at.
+    if (this.cfg.dawnBoost && this.dawnLadder(gig, ord, ord.shownFee)) return
     this.reprice(gig, ord)
+  }
+
+  /** The morning pass of `mornPair`: the day's orders without a driver look for a partner once more. */
+  morningPairs(): void {
+    const day = Math.floor(this.now / DAY)
+    if (this.#pairPass === day || this.now % DAY < this.cfg.mornPair || this.now % DAY >= this.cfg.mornPair + 300) return
+    this.#pairPass = day
+    if ((this.#night.day === day ? this.#night.n : 0) < this.cfg.mornPairDrops) return
+    const set = [...this.orders.values()].filter((o) => o.order.legs.length === 1 && !o.late && !o.urgent && o.bookedAt === null && !o.legs[0]!.pickedUp && !o.legs[0]!.delivered && Math.floor(o.order.lastPickupAt / DAY) === day)
+    for (const o of set) {
+      o.noPair = false
+      this.again.add(o.order.id)
+    }
+    const free = (o: Ord): GigRec | null => {
+      const rec = this.gigs.get(o.legs[0]!.gigId ?? "")
+      return rec && rec.status === "open" && !rec.pair && !rec.late ? rec : null
+    }
+    let pairs = 0
+    const taken = new Set<Ord>()
+    for (const o of set) {
+      const gig = free(o)
+      if (!gig || taken.has(o) || !this.pairable(o)) continue
+      // Its own gig leaves the app only when a partner is there; the withdrawal's answer posts the pair (dispatch).
+      const partner = set.find((p) => p !== o && !taken.has(p) && this.pairable(p) && free(p) && (this.pairPlan(o, p) || this.pairPlan(p, o)))
+      if (!partner) continue
+      taken.add(o).add(partner)
+      pairs++
+      this.withdraw(gig)
+    }
+    this.journal.push({ t: this.now, what: "morning-pairs", open: set.length, withdrawn: pairs, drops: this.#night.n })
+  }
+
+  /** Counts a drop in the first hour of a day (mornPair). */
+  nightDrop(): void {
+    const day = Math.floor(this.now / DAY)
+    if (this.#night.day !== day) this.#night = { day, n: 0 }
+    this.#night.n++
   }
 
   onExpired(gigId: string): void {
@@ -1830,8 +2125,36 @@ export class Desk {
 
   /** Runs after each batch of events: posts what has no gig, switches hopeless windows to late posts, sends offers. */
   round(): void {
+    if (this.cfg.mornPair > 0 && this.cfg.pairs) this.morningPairs()
+    const dawn = Math.floor(this.now / DAY) + 1
+    // From 21:00 the ramp's clock sleeps: the first round after it (practice steps are at most two hours long there).
+    const evening = this.now % DAY >= 21 * HOUR && this.#resetDay !== dawn
+    let restart = evening ? (this.cfg.nightReset?.[dawn] ?? 1) : 1
+    if (restart < 1) {
+      const proj = this.projectedLate()
+      this.journal.push({ t: this.now, what: "restart", day: dawn, proj: Math.round(proj * 1000) / 1000, on: proj <= this.cfg.resetMaxLate })
+      if (proj > this.cfg.resetMaxLate) restart = 1
+    }
+    const boost = evening && (this.cfg.dawnBoost?.[dawn] ?? 0) > 0
+    if (evening) this.#resetDay = dawn
+    const resetSlack = Array.isArray(this.cfg.resetSlack) ? (this.cfg.resetSlack[dawn] ?? 0) : this.cfg.resetSlack
     for (const ord of this.orders.values()) {
       if (ord.legs.every((l) => l.delivered)) continue
+      if ((restart < 1 || boost) && !ord.late && !ord.urgent) {
+        const tight = boost && ord.order.lastPickupAt < dawn * DAY + this.cfg.dawnBefore * HOUR
+        for (const gig of this.gigsOf(ord)) {
+          if (gig.status !== "open" || gig.pair || gig.late) continue
+          const was = this.feeNow(gig.post.schedule) / (gig.legs.length / ord.order.legs.length)
+          if (tight) this.dawnLadder(gig, ord, was)
+          // A schedule drawn since 21:00 is a restart already made: a desk that rejoined must not make it twice.
+          else if (restart < 1 && ord.order.lastPickupAt - this.now >= resetSlack && (gig.post.schedule[0]?.at ?? 0) < dawn * DAY - 3 * HOUR) {
+            // schedule() opens at the higher of the order's opening fee and `shownFee`.
+            ord.shownFee = was * restart
+            ord.climb = this.cfg.resetClimb > 0 ? { until: afterAwake(this.now, this.cfg.resetClimb), to: was } : null
+            this.reprice(gig, ord)
+          }
+        }
+      }
       if (this.cfg.pairs) for (const gig of this.gigsOf(ord)) if (gig.pair && gig.status === "open" && (this.now >= gig.pair.until || ord.urgent || ord.late)) this.split(gig, this.now >= gig.pair.until ? "no driver" : "clock")
       // Once the last on-time pickup has passed, an open gig with windows can get no driver: post it open-ended.
       if (!ord.late && this.now > ord.order.lastPickupAt + 5) {

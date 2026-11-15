@@ -54,6 +54,13 @@ export type MarketConfig = {
   /** The width of the win curve that prices are set with, when it should differ from the one the model learns with
    * (`scale`); 0: the same. */
   quoteScale: number
+  /** A part of the flip point for each lane (pickup > delivery), new in each world and learned during the week: the
+   * competitor's lane factor is more than the sum of its two places (in saved weeks a lane's own part has a spread of
+   * about 0.075 in log price and lasts the week). This is its spread before any quote; 0: no such part. */
+  laneSd: number
+  /** Whether what is not yet known of a lane's part widens the win curve, as every other part's uncertainty does
+   * (true), or only moves its centre as it is learned (false: the curve keeps the width the desk was tuned with). */
+  laneWide: boolean
 }
 
 export const MARKET_DEFAULTS: MarketConfig = {
@@ -76,6 +83,8 @@ export const MARKET_DEFAULTS: MarketConfig = {
   dealerReact: 0,
   dealerReactMin: 3,
   quoteScale: 0,
+  laneSd: 0,
+  laneWide: true,
 }
 
 /** `tags` name further parts of the flip point that the lane shares with others: its distance band, the option quoted.
@@ -98,6 +107,7 @@ export class Market {
   readonly pickups = new Map<string, Belief>()
   readonly deliveries = new Map<string, Belief>()
   readonly tags = new Map<string, Belief>()
+  readonly lanes = new Map<string, Belief>()
   /** Orders delivered on time to each dealer, as the dealer counts them (level 8): halved by a late order. */
   readonly trust = new Map<string, number>()
   observations = 0
@@ -128,7 +138,15 @@ export class Market {
       this.#part(this.pickups, lane.pickup, this.cfg.placeSd),
       this.#part(this.deliveries, lane.delivery, this.cfg.placeSd),
       ...(lane.tags ?? []).map((tag) => this.#part(this.tags, tag, this.cfg.tagSd)),
+      ...(this.cfg.laneSd > 0 ? [this.#part(this.lanes, `${lane.pickup}>${lane.delivery}`, this.cfg.laneSd)] : []),
     ]
+  }
+
+  /** The belief the win curve is drawn with: the flip point, and its variance without the lane's own part when that
+   * part is not to widen the curve. */
+  #drawn(lane: Lane): Belief {
+    const { m, v } = this.flip(lane)
+    return this.cfg.laneSd > 0 && !this.cfg.laneWide ? { m, v: v - this.#part(this.lanes, `${lane.pickup}>${lane.delivery}`, this.cfg.laneSd).v } : { m, v }
   }
 
   trustShift(dealerId: string): number {
@@ -163,7 +181,7 @@ export class Market {
   /** P(win) at log price multiple x, with the belief's uncertainty folded into the curve's width. While today may be a
    * price war or an outage, the curve is the mix of the cases. */
   winProb(lane: Lane, x: number, scale = this.cfg.scale): number {
-    const { m, v } = this.flip(lane)
+    const { m, v } = this.#drawn(lane)
     const s = scale * Math.sqrt(1 + (Math.PI * v) / (8 * scale ** 2))
     const reach = lane.reach ?? 1
     if (this.#cases.length === 0) return reach / (1 + Math.exp((x - m) / s))
